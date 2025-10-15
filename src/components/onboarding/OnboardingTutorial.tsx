@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Users, Trophy, Gift, CheckCircle } from 'lucide-react';
+import { Sparkles, MessageSquare, TrendingUp, Gift, Heart, Rocket } from 'lucide-react';
 
 interface OnboardingTutorialProps {
   open: boolean;
@@ -13,29 +13,34 @@ interface OnboardingTutorialProps {
 
 const steps = [
   {
-    title: "Welcome to Inner Odyssey! 🎉",
-    description: "We're excited to help your child grow emotionally and academically. Let's take a quick tour!",
+    title: "Welcome to Inner Odyssey Beta! 🎉",
+    description: "You're a Founding Family member! This quick tour will help you get started. As a beta tester, your feedback shapes the future of learning.",
     icon: Sparkles,
   },
   {
-    title: "Add Your Child",
-    description: "First, create a profile for your child with their name and grade level. Each child gets their own personalized learning journey.",
-    icon: Users,
+    title: "Track Your Child's Progress",
+    description: "Monitor lessons completed, points earned, and emotional check-ins from your parent dashboard.",
+    icon: TrendingUp,
   },
   {
-    title: "Explore the Dashboard",
-    description: "Track your child's progress, view completed lessons, and see their learning streak. You'll always know how they're doing!",
-    icon: Trophy,
-  },
-  {
-    title: "Set Up Rewards",
-    description: "Create custom rewards your child can earn with points. This motivates learning and gives you a fun way to celebrate achievements!",
+    title: "Manage Rewards & Screen Time",
+    description: "Set custom rewards and healthy screen time limits. Your child earns points to redeem rewards!",
     icon: Gift,
   },
   {
-    title: "You're All Set!",
-    description: "That's it! Your child can now start their learning adventure. Check back anytime to see their progress.",
-    icon: CheckCircle,
+    title: "Stay Connected",
+    description: "Send encouraging messages and celebrate your child's achievements together.",
+    icon: Heart,
+  },
+  {
+    title: "Beta Feedback Widget 💬",
+    description: "See that feedback button in the bottom-right? Use it anytime to report bugs, suggest features, or share your experience. Your input is invaluable!",
+    icon: MessageSquare,
+  },
+  {
+    title: "You're All Set! 👑",
+    description: "As a thank you, you've earned the exclusive Founding Family badge! Start by adding your first child.",
+    icon: Rocket,
   },
 ];
 
@@ -62,14 +67,36 @@ export const OnboardingTutorial = ({ open, onComplete }: OnboardingTutorialProps
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Mark onboarding as complete and set beta_tester flag
       await supabase
         .from('profiles')
-        .update({ onboarding_completed: true, onboarding_step: steps.length })
+        .update({ 
+          onboarding_completed: true, 
+          onboarding_step: steps.length,
+          beta_tester: true 
+        })
         .eq('id', user.id);
 
+      // Award Founding Family badge
+      const { data: children } = await supabase
+        .from('children')
+        .select('id')
+        .eq('parent_id', user.id);
+
+      if (children && children.length > 0) {
+        const badgePromises = children.map(child =>
+          supabase.from('user_badges').insert({
+            child_id: child.id,
+            badge_id: 'founding_family',
+            progress: 100
+          })
+        );
+        await Promise.all(badgePromises);
+      }
+
       toast({
-        title: "Welcome aboard! 🚀",
-        description: "You're ready to start your parenting journey with Inner Odyssey.",
+        title: "Welcome, Founding Family Member! 👑",
+        description: "You've earned the exclusive Founding Family badge!",
       });
 
       onComplete();

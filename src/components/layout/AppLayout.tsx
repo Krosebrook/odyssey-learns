@@ -1,6 +1,7 @@
 import { TopBar } from "./TopBar";
 import { Navigation } from "./Navigation";
 import { useNavigate } from "react-router-dom";
+import { FeedbackWidget } from "@/components/beta/FeedbackWidget";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export const AppLayout = ({ children, childName, points }: AppLayoutProps) => {
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
+      <FeedbackWidget />
     </div>
   );
 };
