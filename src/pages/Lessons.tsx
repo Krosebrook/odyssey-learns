@@ -13,6 +13,7 @@ const Lessons = () => {
   const [child, setChild] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [gradeFilter, setGradeFilter] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -31,21 +32,24 @@ const Lessons = () => {
       .eq('id', childId)
       .single();
 
+    setChild(childData);
+    setGradeFilter(childData?.grade_level || 1);
+
     const { data: lessonsData } = await supabase
       .from('lessons')
       .select('*')
-      .eq('grade_level', childData?.grade_level || 1)
       .eq('is_active', true)
       .order('subject', { ascending: true });
 
-    setChild(childData);
     setLessons(lessonsData || []);
     setLoading(false);
   };
 
-  const filteredLessons = filter === 'all' 
-    ? lessons 
-    : lessons.filter(l => l.subject === filter);
+  const filteredLessons = lessons.filter(lesson => {
+    const matchesSubject = filter === 'all' || lesson.subject === filter;
+    const matchesGrade = gradeFilter === null || lesson.grade_level === gradeFilter;
+    return matchesSubject && matchesGrade;
+  });
 
   const subjects = [
     { value: 'all', label: 'All Lessons' },
@@ -64,12 +68,33 @@ const Lessons = () => {
     );
   }
 
+  const grades = [1, 2, 3, 4, 5, 6, 7, 8];
+
   return (
     <AppLayout childName={child?.name} points={child?.total_points || 0}>
       <div className="space-y-8 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Grade 1 Learning Adventures</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Grade {gradeFilter} Learning Adventures
+          </h1>
           <p className="text-muted-foreground">Choose a lesson to start learning!</p>
+        </div>
+
+        {/* Grade Level Filter */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {grades.map(grade => (
+            <button
+              key={grade}
+              onClick={() => setGradeFilter(grade)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                gradeFilter === grade
+                  ? 'bg-secondary text-secondary-foreground shadow-md'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Grade {grade}
+            </button>
+          ))}
         </div>
 
         {/* Subject Filter */}
