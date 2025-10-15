@@ -10,6 +10,7 @@ import ParentSetup from "./pages/ParentSetup";
 import ChildDashboard from "./pages/ChildDashboard";
 import ParentDashboard from "./pages/ParentDashboard";
 import Rewards from "./pages/Rewards";
+import Lessons from "./pages/Lessons";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/parent-setup" element={<ParentSetup />} />
             <Route path="/dashboard" element={<ChildDashboard />} />
             <Route path="/parent-dashboard" element={<ParentDashboard />} />
+            <Route path="/lessons" element={<Lessons />} />
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
