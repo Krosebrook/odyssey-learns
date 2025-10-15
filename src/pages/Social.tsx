@@ -2,8 +2,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useValidatedChild } from "@/hooks/useValidatedChild";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PeerConnections } from "@/components/social/PeerConnections";
-import { SharedActivities } from "@/components/social/SharedActivities";
+import { PeerConnectionsUI } from "@/components/social/PeerConnectionsUI";
+import { SharedActivitiesUI } from "@/components/social/SharedActivitiesUI";
 import { Users, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,11 +58,11 @@ const Social = () => {
           </TabsList>
 
           <TabsContent value="friends" className="mt-6">
-            <PeerConnections childId={childId!} />
+            <PeerConnectionsUI childId={childId!} />
           </TabsContent>
 
           <TabsContent value="activities" className="mt-6">
-            <SharedActivities childId={childId!} />
+            <SharedActivitiesUI childId={childId!} />
           </TabsContent>
         </Tabs>
       </div>

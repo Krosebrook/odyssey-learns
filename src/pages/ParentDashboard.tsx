@@ -16,6 +16,7 @@ import { RewardRedemptions } from "@/components/parent/RewardRedemptions";
 import { ScreenTimeTracker } from "@/components/parent/ScreenTimeTracker";
 import { ParentChildMessaging } from "@/components/parent/ParentChildMessaging";
 import { AIInsights } from "@/components/parent/AIInsights";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const ParentDashboard = () => {
   const { user } = useAuth();
@@ -118,10 +119,13 @@ const ParentDashboard = () => {
               Manage your children's learning journey
             </p>
           </div>
-          <Button onClick={() => navigate('/parent-setup')} className="gap-2 hover-scale">
-            <Plus className="w-4 h-4" />
-            Add Child
-          </Button>
+          <div className="flex items-center gap-3">
+            <NotificationBell parentId={user.id} />
+            <Button onClick={() => navigate('/parent-setup')} className="gap-2 hover-scale">
+              <Plus className="w-4 h-4" />
+              Add Child
+            </Button>
+          </div>
         </div>
 
         {/* Quick Stats */}
