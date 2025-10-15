@@ -15,6 +15,7 @@ import { DigitalNotebook } from "@/components/learning/DigitalNotebook";
 import { CollaborativeActivity } from "@/components/learning/CollaborativeActivity";
 import { CelebrationModal } from "@/components/celebration/CelebrationModal";
 import { checkAndAwardBadges } from "@/lib/badgeChecker";
+import * as analytics from "@/lib/analytics";
 
 interface Lesson {
   id: string;
@@ -109,6 +110,9 @@ const LessonDetail = () => {
     if (!childId || !id) return;
 
     try {
+      // Track lesson start in analytics
+      analytics.trackLessonStart(childId, id);
+
       // Update or create progress
       const { error } = await supabase
         .from("user_progress")
@@ -209,6 +213,10 @@ const LessonDetail = () => {
           : `Great job! You're on your way to mastering ${lesson.subject}!`,
         points: totalPoints,
       });
+
+      // Track lesson completion in analytics
+      const timeSpent = Math.floor((Date.now() - new Date().getTime()) / 1000); // Rough estimate
+      analytics.trackLessonComplete(childId, id, score, timeSpent);
 
       // Check for newly earned badges
       const newBadges = await checkAndAwardBadges(childId);

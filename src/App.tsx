@@ -28,6 +28,7 @@ import Terms from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import BetaAnalytics from "./pages/BetaAnalytics";
+import BetaFeedbackAdmin from "./pages/BetaFeedbackAdmin";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/beta-analytics" element={<BetaAnalytics />} />
+            <Route path="/beta-feedback" element={<BetaFeedbackAdmin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
