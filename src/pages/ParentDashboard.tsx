@@ -15,6 +15,7 @@ import { RewardManagement } from "@/components/parent/RewardManagement";
 import { RewardRedemptions } from "@/components/parent/RewardRedemptions";
 import { ScreenTimeTracker } from "@/components/parent/ScreenTimeTracker";
 import { ParentChildMessaging } from "@/components/parent/ParentChildMessaging";
+import { AIInsights } from "@/components/parent/AIInsights";
 
 const ParentDashboard = () => {
   const { user } = useAuth();
@@ -204,7 +205,7 @@ const ParentDashboard = () => {
           </TabsList>
 
           {/* Children Tab */}
-          <TabsContent value="children">
+          <TabsContent value="children" className="space-y-6">
             <h2 className="text-2xl font-bold mb-6">Your Children</h2>
           
           {children.length === 0 ? (
@@ -220,43 +221,49 @@ const ParentDashboard = () => {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {children.map((child) => (
-                <Card
-                  key={child.id}
-                  className="p-6 elevated-card hover-scale cursor-pointer"
-                  onClick={() => {
-                    localStorage.setItem('selectedChildId', child.id);
-                    navigate('/dashboard');
-                  }}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="w-16 h-16">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-                        {child.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-lg">{child.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Grade {child.grade_level}
-                      </p>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {children.map((child) => (
+                  <Card
+                    key={child.id}
+                    className="p-6 elevated-card hover-scale cursor-pointer"
+                    onClick={() => {
+                      localStorage.setItem('selectedChildId', child.id);
+                      navigate('/dashboard');
+                    }}
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <Avatar className="w-16 h-16">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xl">
+                          {child.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold text-lg">{child.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Grade {child.grade_level}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Points:</span>
-                      <span className="font-medium text-accent">{child.total_points}</span>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Points:</span>
+                        <span className="font-semibold">{child.total_points || 0}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Lessons Done:</span>
-                      <span className="font-medium">0</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* AI Insights for First Child (expandable to all children later) */}
+              {children.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">AI-Powered Insights</h2>
+                  <AIInsights childId={children[0].id} />
+                </div>
+              )}
+            </>
           )}
           </TabsContent>
 
