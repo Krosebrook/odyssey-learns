@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Shield, CheckCircle, XCircle, Clock } from "lucide-react";
+import { useValidatedChild } from "@/hooks/useValidatedChild";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -27,11 +30,40 @@ interface CollaborativeActivityProps {
 }
 
 export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivityProps) => {
+  // Validate child ownership server-side (defense in depth)
+  const { childId: validatedChildId, isValidating } = useValidatedChild();
+  
   const [availableFriends, setAvailableFriends] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
   const [selectedFriend, setSelectedFriend] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Show loading while validating
+  if (isValidating) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center py-8">
+          <LoadingSpinner />
+        </div>
+      </Card>
+    );
+  }
+  
+  // If validation fails or childId mismatch, show error
+  if (!validatedChildId || validatedChildId !== childId) {
+    return (
+      <Card className="p-6">
+        <Alert variant="destructive">
+          <Shield className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            Unable to verify child access. Please refresh the page or select a different child.
+          </AlertDescription>
+        </Alert>
+      </Card>
+    );
+  }
 
   useEffect(() => {
     loadFriends();
@@ -72,29 +104,76 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
     if (!selectedFriend) return;
 
     setLoading(true);
-    const { error } = await supabase
-      .from('collaboration_requests')
-      .insert({
-        requester_child_id: childId,
-        recipient_child_id: selectedFriend,
-        lesson_id: lessonId,
-        status: 'pending',
-      });
+    
+    // Generate idempotency key to prevent double-submissions
+    const idempotencyKey = `collab-${childId}-${selectedFriend}-${lessonId}-${Date.now()}`;
+    
+    // Call secure RPC instead of direct insert
+    const { data, error } = await supabase.rpc('request_collaboration', {
+      p_child_id: childId,
+      p_target_child_id: selectedFriend,
+      p_lesson_id: lessonId,
+      p_idempotency_key: idempotencyKey,
+    });
 
     if (error) {
+      // Network-level error (shouldn't happen with RPC)
+      console.error('RPC call failed:', error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Connection Error",
+        description: "Failed to send request. Please check your connection.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Request Sent! 🤝",
-        description: "Waiting for parent approval...",
-      });
-      loadRequests();
-      setSelectedFriend("");
+    } else if (data) {
+      // Type guard: ensure data is an object with expected shape
+      const result = data as { success: boolean; error?: string; message?: string };
+      
+      if (!result.success) {
+        // Handle structured errors from RPC
+        const errorMessages: Record<string, { title: string; description: string }> = {
+          unauthorized: {
+            title: "Not Authorized",
+            description: "You can only send requests for your own children."
+          },
+          invalid_target: {
+            title: "Invalid Request",
+            description: "A child cannot collaborate with themselves."
+          },
+          duplicate_request: {
+            title: "Request Already Sent",
+            description: "A collaboration request is already pending for this lesson."
+          },
+          rate_limit_exceeded: {
+            title: "Too Many Requests",
+            description: "You've sent too many requests. Please wait 15 minutes and try again."
+          },
+          concurrent_request: {
+            title: "Please Wait",
+            description: "Another request is being processed. Please try again in a moment."
+          }
+        };
+        
+        const errorConfig = errorMessages[result.error || ''] || {
+          title: "Error",
+          description: result.message || "An unexpected error occurred."
+        };
+        
+        toast({
+          title: errorConfig.title,
+          description: errorConfig.description,
+          variant: "destructive",
+        });
+      } else {
+        // Success
+        toast({
+          title: "Request Sent! 🤝",
+          description: "Waiting for parent approval...",
+        });
+        loadRequests();
+        setSelectedFriend("");
+      }
     }
+    
     setLoading(false);
   };
 

@@ -134,6 +134,24 @@ export type Database = {
           },
         ]
       }
+      idempotency_cache: {
+        Row: {
+          created_at: string | null
+          key: string
+          result: Json
+        }
+        Insert: {
+          created_at?: string | null
+          key: string
+          result: Json
+        }
+        Update: {
+          created_at?: string | null
+          key?: string
+          result?: Json
+        }
+        Relationships: []
+      }
       lesson_notes: {
         Row: {
           child_id: string
@@ -298,6 +316,30 @@ export type Database = {
           created_at?: string | null
           full_name?: string
           id?: string
+        }
+        Relationships: []
+      }
+      rate_limit_violations: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          parent_id: string
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          parent_id: string
+          violation_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          parent_id?: string
+          violation_type?: string
         }
         Relationships: []
       }
@@ -529,6 +571,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_idempotency_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_permission: {
         Args: {
           _required_role: Database["public"]["Enums"]["app_role"]
@@ -546,6 +592,15 @@ export type Database = {
       is_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      request_collaboration: {
+        Args: {
+          p_child_id: string
+          p_idempotency_key?: string
+          p_lesson_id: string
+          p_target_child_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
