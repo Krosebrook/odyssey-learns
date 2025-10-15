@@ -61,6 +61,24 @@ export type Database = {
           },
         ]
       }
+      collaboration_rate_limit: {
+        Row: {
+          parent_id: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          parent_id: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          parent_id?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       collaboration_requests: {
         Row: {
           approved_at: string | null
