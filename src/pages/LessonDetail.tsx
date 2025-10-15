@@ -7,7 +7,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Star, BookOpen, ArrowLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/back-button";
+import { Clock, Star, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { DigitalNotebook } from "@/components/learning/DigitalNotebook";
@@ -260,10 +261,7 @@ const LessonDetail = () => {
             <CardDescription>This lesson doesn't exist or you don't have access.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate("/lessons")}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Lessons
-            </Button>
+            <BackButton to="/lessons" label="Back to Lessons" />
           </CardContent>
         </Card>
       </div>
@@ -287,10 +285,7 @@ const LessonDetail = () => {
         />
       )}
       <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => navigate("/lessons")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Lessons
-        </Button>
+        <BackButton to="/lessons" label="Back to Lessons" />
 
         <Card>
           <CardHeader>

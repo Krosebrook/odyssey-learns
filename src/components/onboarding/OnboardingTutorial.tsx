@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, MessageSquare, TrendingUp, Gift, Heart, Rocket } from 'lucide-react';
@@ -9,6 +11,7 @@ import { Sparkles, MessageSquare, TrendingUp, Gift, Heart, Rocket } from 'lucide
 interface OnboardingTutorialProps {
   open: boolean;
   onComplete: () => void;
+  onSkip?: () => void;
 }
 
 const steps = [
@@ -44,8 +47,9 @@ const steps = [
   },
 ];
 
-export const OnboardingTutorial = ({ open, onComplete }: OnboardingTutorialProps) => {
+export const OnboardingTutorial = ({ open, onComplete, onSkip }: OnboardingTutorialProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const { toast } = useToast();
 
   const handleNext = () => {
@@ -73,7 +77,6 @@ export const OnboardingTutorial = ({ open, onComplete }: OnboardingTutorialProps
         .update({ 
           onboarding_completed: true, 
           onboarding_step: steps.length,
-          beta_tester: true 
         })
         .eq('id', user.id);
 
@@ -110,6 +113,27 @@ export const OnboardingTutorial = ({ open, onComplete }: OnboardingTutorialProps
     }
   };
 
+  const handleSkip = async () => {
+    if (dontShowAgain) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ onboarding_completed: true })
+            .eq('id', user.id);
+        }
+      } catch (error) {
+        console.error('Error skipping tutorial:', error);
+      }
+    }
+    if (onSkip) {
+      onSkip();
+    } else {
+      onComplete();
+    }
+  };
+
   const progress = ((currentStep + 1) / steps.length) * 100;
   const CurrentIcon = steps[currentStep].icon;
 
@@ -136,17 +160,38 @@ export const OnboardingTutorial = ({ open, onComplete }: OnboardingTutorialProps
             </div>
             <Progress value={progress} className="h-2" />
           </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="dontShowAgain" 
+              checked={dontShowAgain}
+              onCheckedChange={(checked) => setDontShowAgain(checked === true)}
+            />
+            <Label htmlFor="dontShowAgain" className="text-sm text-muted-foreground cursor-pointer">
+              Don't show this again
+            </Label>
+          </div>
         </div>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 0}
-          >
-            Back
-          </Button>
-          <Button onClick={handleNext}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <div className="flex gap-2 flex-1">
+            <Button
+              variant="ghost"
+              onClick={handleSkip}
+              className="flex-1"
+            >
+              Skip Tutorial
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 0}
+              className="flex-1"
+            >
+              Back
+            </Button>
+          </div>
+          <Button onClick={handleNext} className="flex-1">
             {currentStep === steps.length - 1 ? "Get Started" : "Next"}
           </Button>
         </DialogFooter>
