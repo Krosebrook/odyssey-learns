@@ -52,10 +52,10 @@ export default function BetaAnalytics() {
     setLoading(true);
     try {
       // Fetch basic metrics (example queries - adjust based on actual data)
-      const [childrenResult, feedbackResult] = await Promise.all([
-        supabase.from('children').select('id', { count: 'exact' }),
-        supabase.from('beta_feedback').select('feedback_type', { count: 'exact' })
-      ]);
+      const childrenResult = await supabase.from('children').select('id', { count: 'exact' });
+      
+      // @ts-ignore - Types will regenerate after migration
+      const feedbackResult = await supabase.from('beta_feedback').select('feedback_type', { count: 'exact' });
 
       setMetrics({
         totalChildren: childrenResult.count || 0,

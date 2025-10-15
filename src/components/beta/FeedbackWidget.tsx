@@ -48,7 +48,8 @@ export const FeedbackWidget = () => {
         platform: navigator.platform
       };
 
-      const { error } = await supabase.from('beta_feedback').insert({
+      // @ts-ignore - Types will regenerate after migration
+      const { error } = await (supabase as any).from('beta_feedback').insert({
         user_id: user.id,
         feedback_type: formData.type,
         severity: formData.type === 'bug' ? formData.severity : null,
