@@ -17,7 +17,7 @@ const Index = () => {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        navigate('/');
+        navigate('/landing');
       } else {
         loadChildren();
       }
@@ -30,15 +30,22 @@ const Index = () => {
     const { data } = await supabase
       .from('children')
       .select('*')
-      .eq('parent_id', user.id);
+      .eq('parent_id', user.id)
+      .order('created_at', { ascending: false });
 
-    if (data && data.length > 0) {
-      setChildren(data);
-    } else {
+    setChildren(data || []);
+    setLoading(false);
+
+    // Auto-redirect logic
+    const selectedChildId = localStorage.getItem('selectedChildId');
+    if (selectedChildId && data?.some(c => c.id === selectedChildId)) {
+      navigate('/dashboard');
+    } else if (data && data.length === 1) {
+      await selectChild(data[0].id);
+      navigate('/dashboard');
+    } else if (!data || data.length === 0) {
       navigate('/parent-setup');
     }
-    
-    setLoading(false);
   };
 
   const handleChildSelect = async (childId: string) => {
@@ -63,9 +70,9 @@ const Index = () => {
           <div className="inline-block w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mb-4 shadow-elevated">
             <span className="text-3xl font-bold text-primary-foreground">IO</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Welcome to Inner Odyssey!</h1>
+          <h1 className="text-4xl font-bold mb-2">Welcome Back!</h1>
           <p className="text-muted-foreground">
-            Who's ready to learn today?
+            Select a child to continue their learning journey
           </p>
         </div>
 

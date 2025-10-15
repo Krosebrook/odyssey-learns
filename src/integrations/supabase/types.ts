@@ -1126,6 +1126,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_streak: {
+        Args: { p_child_id: string }
+        Returns: number
+      }
       cleanup_idempotency_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined

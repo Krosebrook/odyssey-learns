@@ -60,39 +60,9 @@ const ChildDashboard = () => {
       .eq('child_id', childId)
       .eq('status', 'completed');
 
-    // Calculate streak (days with consecutive completed lessons)
-    const { data: recentProgress } = await supabase
-      .from('user_progress')
-      .select('completed_at')
-      .eq('child_id', childId)
-      .eq('status', 'completed')
-      .order('completed_at', { ascending: false })
-      .limit(30);
-
-    let streak = 0;
-    if (recentProgress && recentProgress.length > 0) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const dates = recentProgress
-        .map(p => {
-          const date = new Date(p.completed_at!);
-          date.setHours(0, 0, 0, 0);
-          return date.getTime();
-        })
-        .filter((value, index, self) => self.indexOf(value) === index)
-        .sort((a, b) => b - a);
-
-      for (let i = 0; i < dates.length; i++) {
-        const expectedDate = new Date(today);
-        expectedDate.setDate(today.getDate() - i);
-        if (dates[i] === expectedDate.getTime()) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-    }
+    // Calculate streak using optimized database function
+    const { data: streakData } = await supabase.rpc('calculate_streak', { p_child_id: childId });
+    const streak = streakData || 0;
 
     setChild(childData);
     setLessons(lessonsData || []);
