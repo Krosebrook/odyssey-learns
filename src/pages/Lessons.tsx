@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Clock, Award } from "lucide-react";
+import { useValidatedChild } from "@/hooks/useValidatedChild";
 
 const Lessons = () => {
+  const { childId, isValidating } = useValidatedChild();
   const [child, setChild] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [filter, setFilter] = useState<string>("all");
@@ -15,11 +17,12 @@ const Lessons = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!isValidating && childId) {
+      loadData();
+    }
+  }, [childId, isValidating]);
 
   const loadData = async () => {
-    const childId = localStorage.getItem('selectedChildId');
     if (!childId) return;
 
     const { data: childData } = await supabase
@@ -53,7 +56,7 @@ const Lessons = () => {
     { value: 'lifeskills', label: 'Life Skills' }
   ];
 
-  if (loading) {
+  if (isValidating || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />

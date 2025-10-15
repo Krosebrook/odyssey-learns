@@ -8,24 +8,23 @@ import { BookOpen, Award, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useValidatedChild } from "@/hooks/useValidatedChild";
 
 const ChildDashboard = () => {
+  const { childId, isValidating } = useValidatedChild();
   const [child, setChild] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (!isValidating && childId) {
+      loadDashboardData();
+    }
+  }, [childId, isValidating]);
 
   const loadDashboardData = async () => {
-    const childId = localStorage.getItem('selectedChildId');
-    
-    if (!childId) {
-      navigate('/');
-      return;
-    }
+    if (!childId) return;
 
     const { data: childData } = await supabase
       .from('children')
@@ -44,12 +43,17 @@ const ChildDashboard = () => {
     setLoading(false);
   };
 
-  if (loading) {
+  if (isValidating || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />
       </div>
     );
+  }
+
+  if (!childId) {
+    navigate('/');
+    return null;
   }
 
   return (

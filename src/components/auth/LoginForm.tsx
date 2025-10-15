@@ -78,6 +78,7 @@ export const LoginForm = () => {
           type="password"
           placeholder="••••••••"
           value={password}
+          maxLength={128}
           onChange={(e) => {
             setPassword(e.target.value);
             setErrors((prev) => ({ ...prev, password: undefined }));

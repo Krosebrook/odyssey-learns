@@ -6,19 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Award, Gift } from "lucide-react";
 import { toast } from "sonner";
+import { useValidatedChild } from "@/hooks/useValidatedChild";
 
 const Rewards = () => {
+  const { childId, isValidating } = useValidatedChild();
   const [child, setChild] = useState<any>(null);
   const [rewards, setRewards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadRewardsData();
-  }, []);
+    if (!isValidating && childId) {
+      loadRewardsData();
+    }
+  }, [childId, isValidating]);
 
   const loadRewardsData = async () => {
-    const childId = localStorage.getItem('selectedChildId');
-    
     if (!childId) return;
 
     const { data: childData } = await supabase
@@ -65,7 +67,7 @@ const Rewards = () => {
     }
   };
 
-  if (loading) {
+  if (isValidating || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />

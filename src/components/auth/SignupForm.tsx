@@ -86,6 +86,7 @@ export const SignupForm = () => {
           type="password"
           placeholder="••••••••"
           value={password}
+          maxLength={128}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
@@ -98,6 +99,7 @@ export const SignupForm = () => {
         <Input
           id="confirmPassword"
           type="password"
+          maxLength={128}
           placeholder="••••••••"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
