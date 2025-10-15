@@ -14,6 +14,7 @@ import Rewards from "./pages/Rewards";
 import Lessons from "./pages/Lessons";
 import LessonDetail from "./pages/LessonDetail";
 import Settings from "./pages/Settings";
+import Badges from "./pages/Badges";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/lessons" element={<Lessons />} />
             <Route path="/lesson/:id" element={<LessonDetail />} />
             <Route path="/rewards" element={<Rewards />} />
+            <Route path="/badges" element={<Badges />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

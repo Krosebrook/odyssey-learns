@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_badges: {
+        Row: {
+          badge_id: string
+          category: string
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          is_active: boolean | null
+          name: string
+          points_reward: number | null
+          tier: string | null
+          unlock_criteria: Json
+        }
+        Insert: {
+          badge_id: string
+          category: string
+          created_at?: string | null
+          description: string
+          icon: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          points_reward?: number | null
+          tier?: string | null
+          unlock_criteria: Json
+        }
+        Update: {
+          badge_id?: string
+          category?: string
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          points_reward?: number | null
+          tier?: string | null
+          unlock_criteria?: Json
+        }
+        Relationships: []
+      }
       avatar_items: {
         Row: {
           created_at: string | null
@@ -174,6 +216,50 @@ export type Database = {
           {
             foreignKeyName: "collaboration_requests_requester_child_id_fkey"
             columns: ["requester_child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emotion_logs: {
+        Row: {
+          child_id: string
+          coping_strategy: string | null
+          created_at: string | null
+          emotion_type: string
+          id: string
+          intensity: number
+          logged_at: string | null
+          reflection_notes: string | null
+          trigger: string | null
+        }
+        Insert: {
+          child_id: string
+          coping_strategy?: string | null
+          created_at?: string | null
+          emotion_type: string
+          id?: string
+          intensity: number
+          logged_at?: string | null
+          reflection_notes?: string | null
+          trigger?: string | null
+        }
+        Update: {
+          child_id?: string
+          coping_strategy?: string | null
+          created_at?: string | null
+          emotion_type?: string
+          id?: string
+          intensity?: number
+          logged_at?: string | null
+          reflection_notes?: string | null
+          trigger?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emotion_logs_child_id_fkey"
+            columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
             referencedColumns: ["id"]
@@ -539,6 +625,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "screen_time_sessions_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          child_id: string
+          earned_at: string | null
+          id: string
+          progress: number | null
+        }
+        Insert: {
+          badge_id: string
+          child_id: string
+          earned_at?: string | null
+          id?: string
+          progress?: number | null
+        }
+        Update: {
+          badge_id?: string
+          child_id?: string
+          earned_at?: string | null
+          id?: string
+          progress?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "achievement_badges"
+            referencedColumns: ["badge_id"]
+          },
+          {
+            foreignKeyName: "user_badges_child_id_fkey"
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"

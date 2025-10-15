@@ -13,7 +13,9 @@ import { CelebrationModal } from "@/components/celebration/CelebrationModal";
 import { generateDailyQuest, isQuestStale } from "@/lib/questGenerator";
 import { Sparkles, Settings } from "lucide-react";
 import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
-import { useState as useLocalState } from "react";
+import { EmotionCheckIn } from "@/components/emotional/EmotionCheckIn";
+import { BadgeShowcase } from "@/components/badges/BadgeShowcase";
+import { checkAndAwardBadges } from "@/lib/badgeChecker";
 
 const ChildDashboard = () => {
   const { childId, isValidating } = useValidatedChild();
@@ -281,6 +283,27 @@ const ChildDashboard = () => {
             </div>
           </Card>
         )}
+
+        {/* Emotional Check-In */}
+        <EmotionCheckIn 
+          childId={childId} 
+          gradeLevel={child?.grade_level || 5}
+          onComplete={async () => {
+            // Check for new badges after emotion check-in
+            const newBadges = await checkAndAwardBadges(childId);
+            if (newBadges.length > 0) {
+              setCelebration({
+                type: 'badge',
+                title: '🏆 New Badge Earned!',
+                message: `You've unlocked ${newBadges.length} new badge${newBadges.length > 1 ? 's' : ''}!`,
+                points: 0,
+              });
+            }
+          }}
+        />
+
+        {/* Badge Showcase */}
+        <BadgeShowcase childId={childId} compact />
 
         {/* Available Lessons */}
         <div>

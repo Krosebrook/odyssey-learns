@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import { DigitalNotebook } from "@/components/learning/DigitalNotebook";
 import { CollaborativeActivity } from "@/components/learning/CollaborativeActivity";
 import { CelebrationModal } from "@/components/celebration/CelebrationModal";
+import { checkAndAwardBadges } from "@/lib/badgeChecker";
 
 interface Lesson {
   id: string;
@@ -208,6 +209,20 @@ const LessonDetail = () => {
         points: totalPoints,
       });
 
+      // Check for newly earned badges
+      const newBadges = await checkAndAwardBadges(childId);
+      if (newBadges.length > 0) {
+        // Show badge celebration after lesson celebration
+        setTimeout(() => {
+          setCelebration({
+            type: 'badge',
+            title: '🏆 New Badge Earned!',
+            message: `You've unlocked ${newBadges.length} new achievement badge${newBadges.length > 1 ? 's' : ''}!`,
+            points: 0,
+          });
+        }, 3000);
+      }
+
       toast({
         title: isQuestComplete ? "🎯 Quest Complete!" : "🎉 Lesson Complete!",
         description: `You earned ${totalPoints} points! Score: ${score}%`,
@@ -215,7 +230,7 @@ const LessonDetail = () => {
 
       setTimeout(() => {
         navigate("/dashboard");
-      }, 2000);
+      }, newBadges.length > 0 ? 5000 : 2000);
     } catch (error) {
       console.error("Error completing lesson:", error);
       toast({
