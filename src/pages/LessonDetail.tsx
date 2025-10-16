@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useValidatedChild } from "@/hooks/useValidatedChild";
+import { usePlatformLessonQuota } from "@/hooks/usePlatformLessonQuota";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -8,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
-import { Clock, Star, BookOpen } from "lucide-react";
+import { Clock, Star, BookOpen, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { DigitalNotebook } from "@/components/learning/DigitalNotebook";
@@ -16,6 +17,7 @@ import { CollaborativeActivity } from "@/components/learning/CollaborativeActivi
 import { CelebrationModal } from "@/components/celebration/CelebrationModal";
 import { checkAndAwardBadges } from "@/lib/badgeChecker";
 import * as analytics from "@/lib/analytics";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Lesson {
   id: string;
@@ -47,6 +49,7 @@ const LessonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { childId, isValidating } = useValidatedChild();
+  const { quota, loading: quotaLoading, incrementCompleted } = usePlatformLessonQuota(childId);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [child, setChild] = useState<Child | null>(null);
   const [progress, setProgress] = useState<UserProgress | null>(null);
@@ -55,6 +58,7 @@ const LessonDetail = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [celebration, setCelebration] = useState<any>(null);
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
 
   useEffect(() => {
     if (!isValidating && childId && id) {
@@ -108,6 +112,12 @@ const LessonDetail = () => {
 
   const handleStartLesson = async () => {
     if (!childId || !id) return;
+
+    // Check quota before starting (only for platform lessons, not custom)
+    if (!quotaLoading && quota && !quota.allowed) {
+      setShowQuotaDialog(true);
+      return;
+    }
 
     try {
       // Track lesson start in analytics
@@ -204,6 +214,9 @@ const LessonDetail = () => {
 
       if (pointsError) throw pointsError;
 
+      // Increment platform lesson quota (only for non-custom lessons)
+      await incrementCompleted();
+
       // Show celebration
       setCelebration({
         type: isQuestComplete ? 'quest' : 'lesson',
@@ -292,6 +305,33 @@ const LessonDetail = () => {
           gradeLevel={child.grade_level}
         />
       )}
+      
+      <AlertDialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Daily Lesson Limit Reached
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>You've completed your {quota?.baseLimit || 10} daily lessons!</p>
+              <p className="font-medium">Ways to unlock more lessons:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Ask a parent for bonus lessons</li>
+                <li>Earn Lesson Tokens through achievements</li>
+                <li>Create your own custom lessons (3 per day)</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       <div className="max-w-4xl mx-auto space-y-6">
         <BackButton to="/lessons" label="Back to Lessons" />
 

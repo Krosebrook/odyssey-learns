@@ -10,7 +10,10 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-weekly-reports]
-verify_jwt = false  # Called by pg_cron scheduler only, validates via body.scheduled flag
+verify_jwt = false
 
 [functions.batch-lesson-generation]
-verify_jwt = false
+verify_jwt = true
+
+[functions.generate-custom-lesson]
+verify_jwt = true

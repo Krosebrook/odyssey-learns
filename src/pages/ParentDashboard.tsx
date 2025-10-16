@@ -17,12 +17,14 @@ import { ScreenTimeTracker } from "@/components/parent/ScreenTimeTracker";
 import { ParentChildMessaging } from "@/components/parent/ParentChildMessaging";
 import { AIInsights } from "@/components/parent/AIInsights";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { BonusLessonManager } from "@/components/parent/BonusLessonManager";
 
 const ParentDashboard = () => {
   const { user } = useAuth();
   const [children, setChildren] = useState<any[]>([]);
   const [weeklyReports, setWeeklyReports] = useState<any[]>([]);
   const [collaborationRequests, setCollaborationRequests] = useState<any[]>([]);
+  const [dailyQuotas, setDailyQuotas] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
@@ -77,6 +79,20 @@ const ParentDashboard = () => {
         .order('created_at', { ascending: false });
 
       setCollaborationRequests(requestsData || []);
+
+      // Load daily quotas for all children
+      const today = new Date().toISOString().split('T')[0];
+      const { data: quotaData } = await supabase
+        .from('daily_lesson_quota' as any)
+        .select('*')
+        .in('child_id', childIds)
+        .eq('quota_date', today);
+
+      const quotaMap: Record<string, any> = {};
+      quotaData?.forEach((quota: any) => {
+        quotaMap[quota.child_id] = quota;
+      });
+      setDailyQuotas(quotaMap);
     }
 
     setLoading(false);
@@ -265,6 +281,27 @@ const ParentDashboard = () => {
                 <div>
                   <h2 className="text-2xl font-bold mb-4">AI-Powered Insights</h2>
                   <AIInsights childId={children[0].id} />
+                </div>
+              )}
+
+              {/* Bonus Lesson Management */}
+              {children.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-2xl font-bold mb-4">Daily Lesson Bonuses</h2>
+                  <p className="text-muted-foreground mb-4">
+                    Grant bonus lessons beyond the daily 10-lesson limit or use as rewards for good behavior
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {children.map((child) => (
+                      <BonusLessonManager
+                        key={child.id}
+                        childId={child.id}
+                        childName={child.name}
+                        currentBonus={dailyQuotas[child.id]?.bonus_lessons_granted || 0}
+                        onBonusGranted={loadDashboardData}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </>

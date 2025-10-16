@@ -17,6 +17,8 @@ import { EmotionCheckIn } from "@/components/emotional/EmotionCheckIn";
 import { BadgeShowcase } from "@/components/badges/BadgeShowcase";
 import { checkAndAwardBadges } from "@/lib/badgeChecker";
 import { DailyQuest } from "@/components/quests/DailyQuest";
+import { CustomLessonGenerator } from "@/components/learning/CustomLessonGenerator";
+import { LessonTokenDisplay } from "@/components/gamification/LessonTokenDisplay";
 
 const ChildDashboard = () => {
   const { childId, isValidating } = useValidatedChild();
@@ -219,6 +221,25 @@ const ChildDashboard = () => {
 
         {/* Daily Quest - Age-Adaptive UI */}
         <DailyQuest />
+
+        {/* Lesson Tokens Display */}
+        {child && <LessonTokenDisplay childId={child.id} />}
+
+        {/* Custom Lesson Generator */}
+        {child && (
+          <CustomLessonGenerator
+            childId={child.id}
+            gradeLevel={child.grade_level}
+            onLessonCreated={(lesson) => {
+              setCelebration({
+                type: 'lesson',
+                title: '✨ Lesson Created!',
+                message: `Your custom lesson "${lesson.title}" is ready to explore!`,
+                points: 0,
+              });
+            }}
+          />
+        )}
 
         {/* Emotional Check-In */}
         <EmotionCheckIn 
