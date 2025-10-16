@@ -26,8 +26,9 @@ export const NotificationBell = ({ parentId }: { parentId: string }) => {
     loadNotifications();
     
     // Subscribe to real-time notifications
+    // Note: RLS policies are enforced server-side via supabase_realtime publication
     const channel = supabase
-      .channel('notifications')
+      .channel('parent_notifications_channel')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
