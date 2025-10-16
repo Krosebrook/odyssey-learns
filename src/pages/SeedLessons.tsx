@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { Loader2, CheckCircle, Zap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export default function SeedLessons() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<any>(null);
 
@@ -17,7 +17,7 @@ export default function SeedLessons() {
     setResult(null);
 
     try {
-      toast.info('Starting automated lesson generation... This will take 30-45 minutes.');
+      toast.info('Starting automated lesson generation... This will take 10-15 minutes.');
       
       setProgress(20);
       
@@ -41,6 +41,11 @@ export default function SeedLessons() {
       setLoading(false);
     }
   };
+
+  // Auto-start lesson generation on page load
+  useEffect(() => {
+    handleSeedLessons();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
