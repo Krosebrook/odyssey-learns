@@ -19,6 +19,8 @@ import { checkAndAwardBadges } from "@/lib/badgeChecker";
 import { DailyQuest } from "@/components/quests/DailyQuest";
 import { CustomLessonGenerator } from "@/components/learning/CustomLessonGenerator";
 import { LessonTokenDisplay } from "@/components/gamification/LessonTokenDisplay";
+import { ShareLessonModal } from "@/components/learning/ShareLessonModal";
+import { Share2 } from "lucide-react";
 
 const ChildDashboard = () => {
   const { childId, isValidating } = useValidatedChild();
@@ -29,6 +31,9 @@ const ChildDashboard = () => {
   const [dailyQuest, setDailyQuest] = useState<any>(null);
   const [celebration, setCelebration] = useState<any>(null);
   const [showAvatarCustomizer, setShowAvatarCustomizer] = useState(false);
+  const [myLessons, setMyLessons] = useState<any[]>([]);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,6 +125,15 @@ const ChildDashboard = () => {
         lesson: questLesson,
       });
     }
+
+    // Load child's custom lessons
+    const { data: customLessons } = await supabase
+      .from('child_generated_lessons' as any)
+      .select('*')
+      .eq('creator_child_id', childId)
+      .order('created_at', { ascending: false });
+
+    setMyLessons(customLessons || []);
   };
 
   if (isValidating || loading) {
@@ -237,7 +251,70 @@ const ChildDashboard = () => {
                 message: `Your custom lesson "${lesson.title}" is ready to explore!`,
                 points: 0,
               });
+              loadDashboardData(); // Refresh to show new lesson
             }}
+          />
+        )}
+
+        {/* My Custom Lessons */}
+        {myLessons.length > 0 && (
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">My Custom Lessons</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myLessons.map((lesson) => (
+                <Card key={lesson.id} className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <SubjectBadge subject={lesson.subject} />
+                    <div className="flex items-center gap-1">
+                      {lesson.share_status === 'private' && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setSelectedLesson(lesson);
+                            setShareModalOpen(true);
+                          }}
+                        >
+                          <Share2 className="w-4 h-4 mr-1" />
+                          Share
+                        </Button>
+                      )}
+                      {lesson.share_status === 'pending_approval' && (
+                        <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
+                          Pending
+                        </span>
+                      )}
+                      {lesson.share_status === 'public' && (
+                        <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                          Public
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <h4 className="font-semibold mb-1">{lesson.title}</h4>
+                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+                    {lesson.description}
+                  </p>
+                  {lesson.share_status === 'public' && (
+                    <p className="text-xs text-muted-foreground">
+                      Used {lesson.times_used} times • Earned {lesson.times_used * 10} points
+                    </p>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {selectedLesson && (
+          <ShareLessonModal
+            lessonId={selectedLesson.id}
+            lessonTitle={selectedLesson.title}
+            open={shareModalOpen}
+            onOpenChange={setShareModalOpen}
+            onSuccess={() => loadDashboardData()}
           />
         )}
 

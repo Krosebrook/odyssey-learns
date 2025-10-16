@@ -30,6 +30,7 @@ import UpdatePassword from "./pages/UpdatePassword";
 import BetaAnalytics from "./pages/BetaAnalytics";
 import BetaFeedbackAdmin from "./pages/BetaFeedbackAdmin";
 import AdminDashboard from "./pages/AdminDashboard";
+import CommunityLessons from "./pages/CommunityLessons";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/dashboard" element={<ChildDashboard />} />
             <Route path="/lessons" element={<Lessons />} />
             <Route path="/lessons/:id" element={<LessonDetail />} />
+            <Route path="/community-lessons" element={<CommunityLessons />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/badges" element={<Badges />} />
             <Route path="/rewards" element={<Rewards />} />

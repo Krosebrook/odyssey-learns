@@ -18,6 +18,7 @@ import { ParentChildMessaging } from "@/components/parent/ParentChildMessaging";
 import { AIInsights } from "@/components/parent/AIInsights";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { BonusLessonManager } from "@/components/parent/BonusLessonManager";
+import { PendingShareApprovals } from "@/components/parent/PendingShareApprovals";
 
 const ParentDashboard = () => {
   const { user } = useAuth();
@@ -333,8 +334,15 @@ const ParentDashboard = () => {
           </TabsContent>
 
           {/* Collaboration Approvals Tab */}
-          <TabsContent value="approvals">
-            <h2 className="text-2xl font-bold mb-6">Collaboration Requests</h2>
+          <TabsContent value="approvals" className="space-y-6">
+            <h2 className="text-2xl font-bold mb-6">Pending Approvals</h2>
+            
+            {/* Share Approvals */}
+            <PendingShareApprovals />
+
+            {/* Collaboration Requests */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Collaboration Requests</h3>
             {collaborationRequests.length === 0 ? (
               <Card className="p-12 text-center">
                 <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -381,6 +389,7 @@ const ParentDashboard = () => {
                 ))}
               </div>
             )}
+            </div>
           </TabsContent>
 
           {/* Rewards Tab */}

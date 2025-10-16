@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, BookOpen, Award, TrendingUp, Users } from "lucide-react";
+import { Home, BookOpen, Award, TrendingUp, Users, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/dashboard" },
   { icon: BookOpen, label: "Lessons", path: "/lessons" },
+  { icon: Globe, label: "Community", path: "/community-lessons" },
   { icon: Award, label: "Badges", path: "/badges" },
   { icon: TrendingUp, label: "Rewards", path: "/rewards" },
   { icon: Users, label: "Social", path: "/social" },
