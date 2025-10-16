@@ -12,6 +12,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import ChildDashboard from "./pages/ChildDashboard";
 import Lessons from "./pages/Lessons";
 import LessonDetail from "./pages/LessonDetail";
+import LessonPlayer from "./pages/LessonPlayer";
 import Settings from "./pages/Settings";
 import Badges from "./pages/Badges";
 import Rewards from "./pages/Rewards";
@@ -52,7 +53,7 @@ const App = () => (
             <Route path="/parent-dashboard" element={<ParentDashboard />} />
             <Route path="/dashboard" element={<ChildDashboard />} />
             <Route path="/lessons" element={<Lessons />} />
-            <Route path="/lessons/:id" element={<LessonDetail />} />
+            <Route path="/lessons/:id" element={<LessonPlayer />} />
             <Route path="/community-lessons" element={<CommunityLessons />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/badges" element={<Badges />} />
