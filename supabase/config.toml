@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.generate-custom-lesson]
 verify_jwt = true
+
+[functions.seed-lessons]
+verify_jwt = true
