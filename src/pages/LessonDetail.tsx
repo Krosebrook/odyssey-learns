@@ -12,6 +12,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { Clock, Star, BookOpen, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { SafeMarkdown } from "@/components/learning/SafeMarkdown";
 import { DigitalNotebook } from "@/components/learning/DigitalNotebook";
 import { CollaborativeActivity } from "@/components/learning/CollaborativeActivity";
 import { CelebrationModal } from "@/components/celebration/CelebrationModal";
@@ -375,9 +376,10 @@ const LessonDetail = () => {
 
             {(isInProgress || isCompleted) && (
               <>
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <ReactMarkdown>{lesson.content_markdown}</ReactMarkdown>
-                </div>
+                <SafeMarkdown 
+                  content={lesson.content_markdown}
+                  className="prose prose-sm max-w-none dark:prose-invert"
+                />
 
                 {lesson.quiz_questions && lesson.quiz_questions.length > 0 && (
                   <Card>

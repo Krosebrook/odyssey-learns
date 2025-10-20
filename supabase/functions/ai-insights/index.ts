@@ -13,6 +13,30 @@ serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Extract and verify user from JWT
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid authentication token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const { childId } = await req.json();
     
     if (!childId) {
@@ -22,16 +46,28 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch child data
-    const { data: child } = await supabase
+    // CRITICAL SECURITY: Verify child ownership before accessing data
+    const { data: child, error: childError } = await supabase
       .from('children')
-      .select('name, grade_level, total_points')
+      .select('name, grade_level, total_points, parent_id')
       .eq('id', childId)
       .single();
+
+    if (childError || !child) {
+      return new Response(JSON.stringify({ error: 'Child not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Verify the authenticated user is the parent of this child
+    if (child.parent_id !== user.id) {
+      console.warn(`Unauthorized AI insights access attempt: User ${user.id} tried to access child ${childId}`);
+      return new Response(JSON.stringify({ error: 'Unauthorized access to child data' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Fetch recent progress
     const { data: recentProgress } = await supabase

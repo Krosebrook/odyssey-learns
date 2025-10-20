@@ -11,8 +11,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { sanitizeMarkdown, sanitizeText } from '@/lib/inputSanitization';
-import ReactMarkdown from 'react-markdown';
+import { sanitizeText } from '@/lib/inputSanitization';
+import { SafeMarkdown } from '@/components/learning/SafeMarkdown';
 import { ArrowLeft, BookOpen, Clock, Star, CheckCircle2, XCircle } from 'lucide-react';
 import { SubjectBadge } from '@/components/ui/subject-badge';
 
@@ -274,9 +274,10 @@ const LessonPlayer = () => {
 
         {!showResults && (
           <Card className="p-6">
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              <ReactMarkdown>{sanitizeMarkdown(lesson.content_markdown)}</ReactMarkdown>
-            </div>
+              <SafeMarkdown 
+                content={lesson.content_markdown} 
+                className="prose prose-sm max-w-none dark:prose-invert"
+              />
           </Card>
         )}
 

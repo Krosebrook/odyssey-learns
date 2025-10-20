@@ -39,7 +39,22 @@ serve(async (req) => {
       });
     }
 
-    console.log('Starting automated lesson generation...');
+    // CRITICAL SECURITY: Verify admin role before allowing lesson generation
+    const { data: isAdmin, error: roleError } = await supabase
+      .rpc('is_admin', { _user_id: user.id });
+
+    if (roleError || !isAdmin) {
+      console.warn(`Unauthorized seed-lessons attempt by user ${user.id}`);
+      return new Response(JSON.stringify({ 
+        error: 'Admin access required',
+        message: 'This operation is restricted to administrators'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`Admin ${user.id} starting automated lesson generation...`);
     console.log(`Target: ${LESSONS_PER_GRADE} lessons per grade × ${GRADES.length} grades = ${LESSONS_PER_GRADE * GRADES.length} total lessons`);
     
     let totalLessonsCreated = 0;
