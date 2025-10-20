@@ -38,7 +38,6 @@ export const LoginForm = () => {
 
     setLoading(true);
 
-    await executeRecaptcha('login');
     const { error } = await signIn(validation.data.email, validation.data.password);
 
     if (error) {

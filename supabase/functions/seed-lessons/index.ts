@@ -41,7 +41,7 @@ serve(async (req) => {
 
     // CRITICAL SECURITY: Verify admin role before allowing lesson generation
     const { data: isAdmin, error: roleError } = await supabase
-      .rpc('is_admin', { _user_id: user.id });
+      .rpc('is_current_user_admin');
 
     if (roleError || !isAdmin) {
       console.warn(`Unauthorized seed-lessons attempt by user ${user.id}`);
