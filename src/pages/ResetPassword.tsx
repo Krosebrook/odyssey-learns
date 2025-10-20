@@ -23,12 +23,31 @@ const ResetPassword = () => {
         redirectTo: `${window.location.origin}/update-password`,
       });
 
-      if (error) throw error;
-
-      setEmailSent(true);
-      toast.success("Password reset email sent! Check your inbox.");
+      if (error) {
+        // Enhanced error handling for rate limiting
+        if (error.message?.toLowerCase().includes('rate limit') || 
+            error.message?.toLowerCase().includes('too many requests')) {
+          toast.error(
+            "Too many reset attempts. Please wait 1 hour before trying again.",
+            { duration: 8000 }
+          );
+        } else if (error.message?.toLowerCase().includes('email') && 
+                   error.message?.toLowerCase().includes('not found')) {
+          // Don't reveal if email exists (security best practice)
+          // Show same success message as valid emails
+          setEmailSent(true);
+          toast.success("If that email is registered, you'll receive a reset link.");
+        } else {
+          toast.error(error.message || "Failed to send reset email");
+        }
+      } else {
+        setEmailSent(true);
+        toast.success("Password reset email sent! Check your inbox.");
+      }
     } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+      // Catch-all for unexpected errors
+      console.error("Password reset error:", error);
+      toast.error("An unexpected error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
