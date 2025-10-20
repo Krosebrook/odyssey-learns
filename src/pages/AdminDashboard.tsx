@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { BatchLessonGenerator } from "@/components/admin/BatchLessonGenerator";
+import { ContentReviewDashboard } from "@/components/admin/ContentReviewDashboard";
 import { 
   Users, BookOpen, MessageSquare, AlertCircle, 
-  TrendingUp, Award, Settings, Database 
+  TrendingUp, Award, Settings, Database, ClipboardCheck
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -223,6 +224,7 @@ export default function AdminDashboard() {
         <Tabs defaultValue="feedback" className="space-y-4">
           <TabsList>
             <TabsTrigger value="feedback">Recent Feedback</TabsTrigger>
+            <TabsTrigger value="review">Content Review</TabsTrigger>
             <TabsTrigger value="users">Recent Users</TabsTrigger>
             <TabsTrigger value="lessons">Lesson Generator</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -262,6 +264,10 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="review" className="space-y-4">
+            <ContentReviewDashboard />
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">

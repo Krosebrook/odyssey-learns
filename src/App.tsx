@@ -31,6 +31,7 @@ import UpdatePassword from "./pages/UpdatePassword";
 import BetaAnalytics from "./pages/BetaAnalytics";
 import BetaFeedbackAdmin from "./pages/BetaFeedbackAdmin";
 import AdminDashboard from "./pages/AdminDashboard";
+import LessonReview from "./pages/LessonReview";
 import CommunityLessons from "./pages/CommunityLessons";
 import SeedLessons from "./pages/SeedLessons";
 import AdminSetup from "./pages/AdminSetup";
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/beta-analytics" element={<BetaAnalytics />} />
             <Route path="/beta-feedback" element={<BetaFeedbackAdmin />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/review/:reviewId" element={<LessonReview />} />
             <Route path="/seed-lessons" element={<SeedLessons />} />
             <Route path="/admin-setup" element={<AdminSetup />} />
             <Route path="*" element={<NotFound />} />

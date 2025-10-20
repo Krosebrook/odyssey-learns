@@ -341,6 +341,13 @@ export type Database = {
             foreignKeyName: "children_daily_quest_id_fkey"
             columns: ["daily_quest_id"]
             isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "children_daily_quest_id_fkey"
+            columns: ["daily_quest_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -403,6 +410,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "collaboration_requests_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
           {
             foreignKeyName: "collaboration_requests_lesson_id_fkey"
             columns: ["lesson_id"]
@@ -566,6 +580,94 @@ export type Database = {
             foreignKeyName: "lesson_notes_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_notes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_reviews: {
+        Row: {
+          age_appropriate_score: number | null
+          assessment_quality_score: number | null
+          assigned_at: string | null
+          clarity_score: number | null
+          completed_at: string | null
+          content_accuracy_score: number | null
+          created_at: string | null
+          engagement_score: number | null
+          id: string
+          lesson_id: string
+          overall_score: number | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          strengths: string | null
+          suggestions: string | null
+          updated_at: string | null
+          weaknesses: string | null
+        }
+        Insert: {
+          age_appropriate_score?: number | null
+          assessment_quality_score?: number | null
+          assigned_at?: string | null
+          clarity_score?: number | null
+          completed_at?: string | null
+          content_accuracy_score?: number | null
+          created_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          lesson_id: string
+          overall_score?: number | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          strengths?: string | null
+          suggestions?: string | null
+          updated_at?: string | null
+          weaknesses?: string | null
+        }
+        Update: {
+          age_appropriate_score?: number | null
+          assessment_quality_score?: number | null
+          assigned_at?: string | null
+          clarity_score?: number | null
+          completed_at?: string | null
+          content_accuracy_score?: number | null
+          created_at?: string | null
+          engagement_score?: number | null
+          id?: string
+          lesson_id?: string
+          overall_score?: number | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          strengths?: string | null
+          suggestions?: string | null
+          updated_at?: string | null
+          weaknesses?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_reviews_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_reviews_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -914,6 +1016,51 @@ export type Database = {
         }
         Relationships: []
       }
+      review_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          new_status: Database["public"]["Enums"]["review_status"]
+          notes: string | null
+          previous_status: Database["public"]["Enums"]["review_status"] | null
+          review_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_status: Database["public"]["Enums"]["review_status"]
+          notes?: string | null
+          previous_status?: Database["public"]["Enums"]["review_status"] | null
+          review_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          new_status?: Database["public"]["Enums"]["review_status"]
+          notes?: string | null
+          previous_status?: Database["public"]["Enums"]["review_status"] | null
+          review_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_history_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["review_id"]
+          },
+          {
+            foreignKeyName: "review_history_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_redemptions: {
         Row: {
           child_id: string
@@ -1086,6 +1233,13 @@ export type Database = {
             foreignKeyName: "screen_time_sessions_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "screen_time_sessions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -1141,6 +1295,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "children"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_activities_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
           },
           {
             foreignKeyName: "shared_activities_lesson_id_fkey"
@@ -1233,6 +1394,13 @@ export type Database = {
             foreignKeyName: "user_progress_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "user_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
@@ -1264,7 +1432,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      lesson_review_dashboard: {
+        Row: {
+          assigned_at: string | null
+          completed_at: string | null
+          grade_level: number | null
+          lesson_created_at: string | null
+          lesson_id: string | null
+          overall_score: number | null
+          review_id: string | null
+          review_status: Database["public"]["Enums"]["review_status"] | null
+          reviewer_id: string | null
+          reviewer_name: string | null
+          started_at: string | null
+          status_label: string | null
+          strengths: string | null
+          subject: string | null
+          suggestions: string | null
+          title: string | null
+          weaknesses: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_admin_role: {
@@ -1282,6 +1471,19 @@ export type Database = {
       cleanup_idempotency_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_review_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approved_reviews: number
+          avg_overall_score: number
+          avg_review_time_hours: number
+          in_review: number
+          needs_revision: number
+          pending_reviews: number
+          rejected_reviews: number
+          total_reviews: number
+        }[]
       }
       has_permission: {
         Args: {
@@ -1313,6 +1515,12 @@ export type Database = {
     }
     Enums: {
       app_role: "parent" | "child" | "admin" | "moderator"
+      review_status:
+        | "pending"
+        | "in_review"
+        | "approved"
+        | "rejected"
+        | "needs_revision"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1441,6 +1649,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["parent", "child", "admin", "moderator"],
+      review_status: [
+        "pending",
+        "in_review",
+        "approved",
+        "rejected",
+        "needs_revision",
+      ],
     },
   },
 } as const
