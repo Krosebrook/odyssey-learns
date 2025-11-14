@@ -37,6 +37,7 @@ import SeedLessons from "./pages/SeedLessons";
 import AdminSetup from "./pages/AdminSetup";
 import SecurityMonitoring from "./pages/SecurityMonitoring";
 import Phase1LessonGeneration from "./pages/Phase1LessonGeneration";
+import SystemHealth from "./pages/SystemHealth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +79,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/review/:reviewId" element={<LessonReview />} />
             <Route path="/security-monitoring" element={<SecurityMonitoring />} />
+            <Route path="/system-health" element={<SystemHealth />} />
             <Route path="/seed-lessons" element={<SeedLessons />} />
             <Route path="/phase1-lessons" element={<Phase1LessonGeneration />} />
             <Route path="/admin-setup" element={<AdminSetup />} />

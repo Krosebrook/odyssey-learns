@@ -13,7 +13,8 @@ import { ContentReviewDashboard } from "@/components/admin/ContentReviewDashboar
 import { LessonSeedTrigger } from "@/components/admin/LessonSeedTrigger";
 import { 
   Users, BookOpen, MessageSquare, AlertCircle, 
-  TrendingUp, Award, Settings, Database, ClipboardCheck
+  TrendingUp, Award, Settings, Database, ClipboardCheck,
+  Activity, Shield
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -146,10 +147,20 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage Inner Odyssey platform</p>
           </div>
-          <Button onClick={() => navigate('/beta-analytics')}>
-            <TrendingUp className="mr-2 h-4 w-4" />
-            View Analytics
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/system-health')} variant="outline">
+              <Activity className="mr-2 h-4 w-4" />
+              System Health
+            </Button>
+            <Button onClick={() => navigate('/security-monitoring')} variant="outline">
+              <Shield className="mr-2 h-4 w-4" />
+              Security
+            </Button>
+            <Button onClick={() => navigate('/beta-analytics')}>
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Analytics
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}

@@ -2,6 +2,7 @@ import { TopBar } from "./TopBar";
 import { Navigation } from "./Navigation";
 import { useNavigate } from "react-router-dom";
 import { FeedbackWidget } from "@/components/beta/FeedbackWidget";
+import { OfflineIndicator } from "@/components/monitoring/OfflineIndicator";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export const AppLayout = ({ children, childName, points }: AppLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
+      <OfflineIndicator />
       <TopBar 
         childName={childName} 
         points={points}
