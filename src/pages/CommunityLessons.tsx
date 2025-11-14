@@ -121,21 +121,16 @@ export default function CommunityLessons() {
 
     try {
       // Increment usage count
-      const { error } = await supabase.rpc('increment_lesson_usage' as any, {
-        p_lesson_id: lessonId,
-        p_child_id: childId
+      // @ts-ignore - Types will regenerate after migration
+      const { error } = await supabase.rpc('increment_lesson_usage', {
+        lesson_uuid: lessonId
       });
 
       if (error) {
-        if (error.message?.includes('already used')) {
-          toast.info('You already used this lesson today!');
-        } else {
-          throw error;
-        }
-        return;
+        console.error('Error incrementing usage:', error);
       }
 
-      toast.success('Lesson started! Creator earned 10 points 🎉');
+      toast.success('Opening lesson...');
       navigate(`/lessons/${lessonId}`);
     } catch (err) {
       console.error('Error using lesson:', err);
