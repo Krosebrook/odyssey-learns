@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Send, Heart, MessageCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { logMessageView } from '@/lib/auditLogger';
 
 interface Child {
   id: string;
@@ -74,6 +75,13 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
 
       if (error) throw error;
       setMessages((data || []) as Message[]);
+
+      // Log access to sensitive messages
+      if (data && data.length > 0) {
+        data.forEach((msg: any) => {
+          logMessageView(msg.id, selectedChild);
+        });
+      }
 
       // Mark messages as read
       await supabase

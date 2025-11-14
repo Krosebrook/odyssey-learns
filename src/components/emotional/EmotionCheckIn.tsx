@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, Loader2 } from 'lucide-react';
+import { encryptEmotionData } from '@/lib/emotionEncryption';
 
 interface EmotionCheckInProps {
   childId: string;
@@ -47,10 +48,20 @@ export const EmotionCheckIn = ({ childId, gradeLevel, onComplete }: EmotionCheck
 
     setSaving(true);
     try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = await encryptEmotionData(
+        trigger || null,
+        null, // coping_strategy (not collected in this component)
+        reflection || null
+      );
+
       const { error } = await supabase.from('emotion_logs').insert({
         child_id: childId,
         emotion_type: selectedEmotion,
         intensity,
+        // Store encrypted versions of sensitive data
+        ...encryptedData,
+        // Keep plaintext for backward compatibility (will be removed later)
         trigger: trigger || null,
         reflection_notes: reflection || null,
       });

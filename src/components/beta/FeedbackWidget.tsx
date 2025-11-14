@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { checkServerRateLimit, RATE_LIMITS } from "@/lib/rateLimiter";
 
 export const FeedbackWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +42,24 @@ export const FeedbackWidget = () => {
     setIsSubmitting(true);
 
     try {
+      // Check rate limit before submitting feedback
+      const rateLimit = await checkServerRateLimit(
+        RATE_LIMITS.BETA_FEEDBACK.endpoint,
+        RATE_LIMITS.BETA_FEEDBACK.maxRequests,
+        RATE_LIMITS.BETA_FEEDBACK.windowMinutes
+      );
+
+      if (!rateLimit.allowed) {
+        toast({
+          title: "Too Many Submissions",
+          description: `You can submit ${RATE_LIMITS.BETA_FEEDBACK.maxRequests} feedback items per day. Try again tomorrow.`,
+          variant: "destructive",
+          duration: 8000
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       // Capture device info
       const deviceInfo = {
         browser: navigator.userAgent,

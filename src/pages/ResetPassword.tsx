@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Mail } from "lucide-react";
+import { checkServerRateLimit, RATE_LIMITS } from "@/lib/rateLimiter";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +20,22 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
+      // Check rate limit before sending reset email
+      const rateLimit = await checkServerRateLimit(
+        RATE_LIMITS.PASSWORD_RESET.endpoint,
+        RATE_LIMITS.PASSWORD_RESET.maxRequests,
+        RATE_LIMITS.PASSWORD_RESET.windowMinutes
+      );
+
+      if (!rateLimit.allowed) {
+        toast.error(
+          `Too many reset attempts. Please wait ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
+          { duration: 8000 }
+        );
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`,
       });

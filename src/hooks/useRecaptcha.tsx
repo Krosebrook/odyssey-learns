@@ -1,7 +1,12 @@
 import { useCallback } from "react";
 
-// Test site key for development - replace with real key before production
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
+// Use production reCAPTCHA key from environment variable
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // Fallback to test key for dev
+
+// Warn if production key not configured
+if (!import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
+  console.warn('⚠️ Production reCAPTCHA key not configured. Using test key. Set VITE_RECAPTCHA_SITE_KEY in environment variables.');
+}
 
 export const useRecaptcha = () => {
   const executeRecaptcha = useCallback(async (action: string): Promise<string> => {

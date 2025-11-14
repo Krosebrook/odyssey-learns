@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { loginSchema } from "@/lib/schemas/auth";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { checkServerRateLimit, RATE_LIMITS } from "@/lib/rateLimiter";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -37,6 +38,22 @@ export const LoginForm = () => {
     }
 
     setLoading(true);
+
+    // Check rate limit before attempting login
+    const rateLimit = await checkServerRateLimit(
+      RATE_LIMITS.LOGIN.endpoint,
+      RATE_LIMITS.LOGIN.maxRequests,
+      RATE_LIMITS.LOGIN.windowMinutes
+    );
+
+    if (!rateLimit.allowed) {
+      toast.error(
+        `Too many login attempts. Please wait ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
+        { duration: 8000 }
+      );
+      setLoading(false);
+      return;
+    }
 
     const { error } = await signIn(validation.data.email, validation.data.password);
 

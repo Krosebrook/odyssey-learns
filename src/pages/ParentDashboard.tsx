@@ -19,6 +19,7 @@ import { AIInsights } from "@/components/parent/AIInsights";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { BonusLessonManager } from "@/components/parent/BonusLessonManager";
 import { PendingShareApprovals } from "@/components/parent/PendingShareApprovals";
+import { logEmotionLogView } from "@/lib/auditLogger";
 
 const ParentDashboard = () => {
   const { user } = useAuth();

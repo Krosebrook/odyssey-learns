@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRecaptcha } from "@/hooks/useRecaptcha";
+import { checkServerRateLimit, RATE_LIMITS } from "@/lib/rateLimiter";
 import { z } from "zod";
 
 const signupFormSchema = z.object({
@@ -45,6 +46,22 @@ export const SignupForm = () => {
     setLoading(true);
 
     try {
+      // Check rate limit before signup
+      const rateLimit = await checkServerRateLimit(
+        RATE_LIMITS.SIGNUP.endpoint,
+        RATE_LIMITS.SIGNUP.maxRequests,
+        RATE_LIMITS.SIGNUP.windowMinutes
+      );
+
+      if (!rateLimit.allowed) {
+        toast.error(
+          `Too many signup attempts. Please wait ${Math.ceil((rateLimit.retryAfter || 0) / 60)} minutes.`,
+          { duration: 8000 }
+        );
+        setLoading(false);
+        return;
+      }
+
       // Execute and verify reCAPTCHA
       const recaptchaToken = await executeRecaptcha('signup');
       if (recaptchaToken) {
