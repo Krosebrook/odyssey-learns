@@ -95,6 +95,7 @@ export const checkServerRateLimit = async (
   if (!user) return { allowed: true }; // Allow anonymous (will fail auth later)
 
   try {
+    // @ts-ignore - Types will regenerate after migration
     const { data, error } = await supabase.rpc('check_rate_limit', {
       p_user_id: user.id,
       p_endpoint: endpoint,

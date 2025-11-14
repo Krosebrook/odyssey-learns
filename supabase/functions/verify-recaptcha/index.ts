@@ -22,8 +22,22 @@ serve(async (req) => {
       );
     }
 
-    // Note: In production, replace test key with real secret key
-    const RECAPTCHA_SECRET_KEY = Deno.env.get('RECAPTCHA_SECRET_KEY') || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+    // Get reCAPTCHA secret key from environment
+    const RECAPTCHA_SECRET_KEY = Deno.env.get('RECAPTCHA_SECRET_KEY');
+
+    // Validate production key is configured
+    if (!RECAPTCHA_SECRET_KEY) {
+      console.error('🚨 RECAPTCHA_SECRET_KEY not configured!');
+      return new Response(
+        JSON.stringify({ valid: false, error: 'reCAPTCHA not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Warn if using test key in production
+    if (RECAPTCHA_SECRET_KEY.startsWith('6LeIxAcTAAAAAG')) {
+      console.warn('⚠️ Using reCAPTCHA test key. Replace with production key!');
+    }
 
     console.log(`Verifying reCAPTCHA token for action: ${action}`);
 

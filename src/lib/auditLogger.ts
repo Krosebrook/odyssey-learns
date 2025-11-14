@@ -15,7 +15,8 @@ export const logAccess = async (
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return; // Don't log anonymous access
 
-    await supabase.from('security_access_log').insert({
+    // @ts-ignore - Types will regenerate after migration
+    await (supabase as any).from('security_access_log').insert({
       user_id: user.id,
       accessed_table: tableName,
       accessed_record_id: recordId,

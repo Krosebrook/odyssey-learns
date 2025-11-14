@@ -24,6 +24,7 @@ export const encryptEmotionData = async (
   
   const encryptField = async (field: string | null) => {
     if (!field) return null;
+    // @ts-ignore - Types will regenerate after migration
     const { data, error } = await supabase.rpc('encrypt_emotion_field', {
       plaintext: field,
       encryption_key: key
@@ -52,6 +53,7 @@ export const decryptEmotionData = async (
   
   const decryptField = async (field: any) => {
     if (!field) return null;
+    // @ts-ignore - Types will regenerate after migration
     const { data, error } = await supabase.rpc('decrypt_emotion_field', {
       ciphertext: field,
       encryption_key: key
