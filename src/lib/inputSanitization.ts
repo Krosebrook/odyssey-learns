@@ -2,6 +2,24 @@
  * Input sanitization utilities to prevent XSS and other injection attacks
  */
 
+import DOMPurify from 'dompurify';
+
+/**
+ * Content length limits for security
+ */
+export const VALIDATION_LIMITS = {
+  CHILD_NAME: 50,
+  LESSON_TITLE: 100,
+  LESSON_DESCRIPTION: 500,
+  MESSAGE_TEXT: 1000,
+  CUSTOM_REWARD: 200,
+  FEEDBACK_TITLE: 150,
+  FEEDBACK_DESCRIPTION: 2000,
+  EMOTION_NOTES: 500,
+  EMAIL: 255,
+  URL: 2048
+} as const;
+
 /**
  * Sanitizes HTML content by escaping special characters
  */
@@ -104,4 +122,73 @@ export const sanitizeNumber = (input: string | number, min?: number, max?: numbe
   }
   
   return num;
+};
+
+/**
+ * Sanitizes rich text content with DOMPurify
+ */
+export const sanitizeRichText = (html: string, maxLength?: number): string => {
+  if (!html) return '';
+  
+  const cleaned = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'pre'],
+    ALLOWED_ATTR: ['href', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false,
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):)/i
+  });
+  
+  if (maxLength && cleaned.length > maxLength) {
+    return cleaned.substring(0, maxLength);
+  }
+  
+  return cleaned;
+};
+
+/**
+ * Validates and sanitizes UUID
+ */
+export const validateUUID = (id: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+};
+
+/**
+ * Validates grade level (K-12)
+ */
+export const validateGradeLevel = (grade: number): boolean => {
+  return Number.isInteger(grade) && grade >= 0 && grade <= 12;
+};
+
+/**
+ * Validates content length against defined limits
+ */
+export const validateLength = (
+  input: string,
+  limitKey: keyof typeof VALIDATION_LIMITS
+): boolean => {
+  return input.length <= VALIDATION_LIMITS[limitKey];
+};
+
+/**
+ * Comprehensive input sanitization for user-generated content
+ */
+export const sanitizeUserInput = (
+  input: string,
+  limitKey: keyof typeof VALIDATION_LIMITS,
+  allowHTML: boolean = false
+): string => {
+  if (!input) return '';
+  
+  // First, enforce length limit
+  const maxLength = VALIDATION_LIMITS[limitKey];
+  let sanitized = input.substring(0, maxLength);
+  
+  // Then sanitize based on content type
+  if (allowHTML) {
+    sanitized = sanitizeRichText(sanitized);
+  } else {
+    sanitized = sanitizeText(sanitized, maxLength);
+  }
+  
+  return sanitized;
 };

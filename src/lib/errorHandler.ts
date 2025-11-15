@@ -22,20 +22,40 @@ export interface HandledError {
 }
 
 /**
- * Log error to monitoring service
+ * Log error to monitoring service and database
  */
-const logError = (error: HandledError) => {
-  // In production, send to monitoring service (Sentry, DataDog, etc.)
+const logError = async (error: HandledError) => {
   console.error('[Error Handler]', error);
   
-  // Store critical errors locally for debugging
+  // Log to database for centralized monitoring
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    await supabase.from('error_logs').insert({
+      user_id: error.context.userId || null,
+      error_message: error.message,
+      error_stack: error.stack || null,
+      severity: error.severity,
+      component: error.context.component || null,
+      action: error.context.action || null,
+      url: error.context.url,
+      user_agent: error.context.userAgent,
+      metadata: {
+        timestamp: error.context.timestamp,
+        ...error.context
+      }
+    });
+  } catch (dbError) {
+    console.warn('Failed to log error to database:', dbError);
+  }
+  
+  // Store critical errors locally as backup
   if (error.severity === 'critical' || error.severity === 'high') {
     try {
       const errors = JSON.parse(localStorage.getItem('critical_errors') || '[]');
       errors.push(error);
       localStorage.setItem('critical_errors', JSON.stringify(errors.slice(-20)));
     } catch (e) {
-      console.error('Failed to store error:', e);
+      console.error('Failed to store error locally:', e);
     }
   }
 };
@@ -43,11 +63,11 @@ const logError = (error: HandledError) => {
 /**
  * Handle application errors with appropriate user feedback
  */
-export const handleError = (
+export const handleError = async (
   error: Error | unknown,
   context: Partial<ErrorContext> = {},
   showToast: boolean = true
-): void => {
+): Promise<void> => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
   
@@ -63,7 +83,7 @@ export const handleError = (
     severity: determineSeverity(errorMessage),
   };
 
-  logError(handledError);
+  await logError(handledError);
 
   if (showToast) {
     const userMessage = getUserFriendlyMessage(errorMessage);
