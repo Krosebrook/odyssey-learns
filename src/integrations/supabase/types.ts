@@ -717,6 +717,48 @@ export type Database = {
           },
         ]
       }
+      error_logs: {
+        Row: {
+          action: string | null
+          component: string | null
+          created_at: string
+          error_message: string
+          error_stack: string | null
+          id: string
+          metadata: Json | null
+          severity: string
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          component?: string | null
+          created_at?: string
+          error_message: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          severity: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          component?: string | null
+          created_at?: string
+          error_message?: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          severity?: string
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       idempotency_cache: {
         Row: {
           created_at: string | null
@@ -2058,6 +2100,7 @@ export type Database = {
         Returns: Json
       }
       cleanup_idempotency_cache: { Args: never; Returns: undefined }
+      cleanup_old_error_logs: { Args: never; Returns: undefined }
       decrypt_emotion_field: {
         Args: { ciphertext: string; encryption_key: string }
         Returns: string
