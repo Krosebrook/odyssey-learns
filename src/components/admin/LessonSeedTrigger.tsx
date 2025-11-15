@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Loader2, PlayCircle, CheckCircle2, AlertCircle } from "lucide-react";
 import { Grade2LessonSeedTrigger } from "./Grade2LessonSeedTrigger";
+import { KindergartenLessonSeedTrigger } from "./KindergartenLessonSeedTrigger";
 
 export const LessonSeedTrigger = () => {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -49,6 +50,7 @@ export const LessonSeedTrigger = () => {
 
   return (
     <div className="space-y-6">
+      <KindergartenLessonSeedTrigger />
       <Grade2LessonSeedTrigger />
       
       <Card>

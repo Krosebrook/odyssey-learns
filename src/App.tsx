@@ -39,6 +39,7 @@ import SecurityMonitoring from "./pages/SecurityMonitoring";
 import Phase1LessonGeneration from "./pages/Phase1LessonGeneration";
 import SystemHealth from "./pages/SystemHealth";
 import LessonAnalytics from "./pages/LessonAnalytics";
+import LessonPerformanceAnalytics from "./pages/LessonPerformanceAnalytics";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import NotFound from "./pages/NotFound";
 

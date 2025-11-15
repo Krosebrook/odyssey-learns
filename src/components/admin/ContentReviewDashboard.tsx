@@ -13,9 +13,11 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   CheckCircle, XCircle, Clock, AlertTriangle, 
-  Eye, Filter, Download, TrendingUp 
+  Eye, Filter, Download, TrendingUp, ChevronDown, CheckSquare 
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +47,7 @@ interface LessonReview {
   started_at: string | null;
   completed_at: string | null;
   status_label: string;
+  priority?: string;
 }
 
 export function ContentReviewDashboard() {
@@ -53,6 +56,9 @@ export function ContentReviewDashboard() {
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [reviews, setReviews] = useState<LessonReview[]>([]);
   const [filter, setFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [selectedReviews, setSelectedReviews] = useState<Set<string>>(new Set());
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   useEffect(() => {
     loadReviewData();
@@ -116,9 +122,69 @@ export function ContentReviewDashboard() {
   };
 
   const filteredReviews = reviews.filter(review => {
-    if (filter === 'all') return true;
-    return review.review_status === filter;
+    if (filter !== 'all' && review.review_status !== filter) return false;
+    if (priorityFilter !== 'all' && review.priority !== priorityFilter) return false;
+    return true;
   });
+
+  const toggleReviewSelection = (reviewId: string) => {
+    const newSelection = new Set(selectedReviews);
+    if (newSelection.has(reviewId)) {
+      newSelection.delete(reviewId);
+    } else {
+      newSelection.add(reviewId);
+    }
+    setSelectedReviews(newSelection);
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedReviews.size === 0) return;
+    
+    setBulkActionLoading(true);
+    try {
+      const updates = Array.from(selectedReviews).map(reviewId =>
+        supabase
+          .from('lesson_reviews')
+          .update({ status: 'approved', completed_at: new Date().toISOString() })
+          .eq('id', reviewId)
+      );
+
+      await Promise.all(updates);
+      toast.success(`Approved ${selectedReviews.size} reviews`);
+      setSelectedReviews(new Set());
+      loadReviewData();
+    } catch (error) {
+      toast.error('Failed to approve reviews');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedReviews.size === 0) return;
+    
+    const confirmed = confirm(`Reject ${selectedReviews.size} lessons?`);
+    if (!confirmed) return;
+
+    setBulkActionLoading(true);
+    try {
+      const updates = Array.from(selectedReviews).map(reviewId =>
+        supabase
+          .from('lesson_reviews')
+          .update({ status: 'rejected', completed_at: new Date().toISOString() })
+          .eq('id', reviewId)
+      );
+
+      await Promise.all(updates);
+      toast.success(`Rejected ${selectedReviews.size} reviews`);
+      setSelectedReviews(new Set());
+      loadReviewData();
+    } catch (error) {
+      toast.error('Failed to reject reviews');
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -237,6 +303,18 @@ export function ContentReviewDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox 
+                          checked={selectedReviews.size === filteredReviews.length && filteredReviews.length > 0}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedReviews(new Set(filteredReviews.map(r => r.review_id)));
+                            } else {
+                              setSelectedReviews(new Set());
+                            }
+                          }}
+                        />
+                      </TableHead>
                       <TableHead>Lesson</TableHead>
                       <TableHead>Subject</TableHead>
                       <TableHead>Grade</TableHead>
@@ -257,6 +335,12 @@ export function ContentReviewDashboard() {
                     ) : (
                       filteredReviews.map((review) => (
                         <TableRow key={review.review_id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedReviews.has(review.review_id)}
+                              onCheckedChange={() => toggleReviewSelection(review.review_id)}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium max-w-[300px] truncate">
                             {review.title}
                           </TableCell>

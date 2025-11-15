@@ -619,6 +619,51 @@ export type Database = {
           },
         ]
       }
+      daily_lesson_stats: {
+        Row: {
+          avg_score: number | null
+          avg_time_minutes: number | null
+          id: string
+          lesson_id: string | null
+          stat_date: string
+          students_attempted: number | null
+          students_completed: number | null
+        }
+        Insert: {
+          avg_score?: number | null
+          avg_time_minutes?: number | null
+          id?: string
+          lesson_id?: string | null
+          stat_date: string
+          students_attempted?: number | null
+          students_completed?: number | null
+        }
+        Update: {
+          avg_score?: number | null
+          avg_time_minutes?: number | null
+          id?: string
+          lesson_id?: string | null
+          stat_date?: string
+          students_attempted?: number | null
+          students_completed?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_lesson_stats_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "daily_lesson_stats_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emotion_logs: {
         Row: {
           child_id: string
@@ -825,11 +870,143 @@ export type Database = {
           },
         ]
       }
+      lesson_performance_metrics: {
+        Row: {
+          avg_quiz_score: number | null
+          avg_time_spent_seconds: number | null
+          completed_attempts: number | null
+          completion_rate: number | null
+          difficulty_rating: number | null
+          first_attempt_success_rate: number | null
+          help_requests: number | null
+          id: string
+          improvement_rate: number | null
+          last_calculated_at: string | null
+          lesson_id: string | null
+          quiz_score_distribution: Json | null
+          sample_size: number | null
+          struggle_indicators: number | null
+          total_attempts: number | null
+          total_quiz_submissions: number | null
+        }
+        Insert: {
+          avg_quiz_score?: number | null
+          avg_time_spent_seconds?: number | null
+          completed_attempts?: number | null
+          completion_rate?: number | null
+          difficulty_rating?: number | null
+          first_attempt_success_rate?: number | null
+          help_requests?: number | null
+          id?: string
+          improvement_rate?: number | null
+          last_calculated_at?: string | null
+          lesson_id?: string | null
+          quiz_score_distribution?: Json | null
+          sample_size?: number | null
+          struggle_indicators?: number | null
+          total_attempts?: number | null
+          total_quiz_submissions?: number | null
+        }
+        Update: {
+          avg_quiz_score?: number | null
+          avg_time_spent_seconds?: number | null
+          completed_attempts?: number | null
+          completion_rate?: number | null
+          difficulty_rating?: number | null
+          first_attempt_success_rate?: number | null
+          help_requests?: number | null
+          id?: string
+          improvement_rate?: number | null
+          last_calculated_at?: string | null
+          lesson_id?: string | null
+          quiz_score_distribution?: Json | null
+          sample_size?: number | null
+          struggle_indicators?: number | null
+          total_attempts?: number | null
+          total_quiz_submissions?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_performance_metrics_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_performance_metrics_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_quality_scores: {
+        Row: {
+          category_scores: Json | null
+          id: string
+          lesson_id: string | null
+          overall_score: number | null
+          recorded_at: string | null
+          review_id: string | null
+          reviewer_id: string | null
+        }
+        Insert: {
+          category_scores?: Json | null
+          id?: string
+          lesson_id?: string | null
+          overall_score?: number | null
+          recorded_at?: string | null
+          review_id?: string | null
+          reviewer_id?: string | null
+        }
+        Update: {
+          category_scores?: Json | null
+          id?: string
+          lesson_id?: string | null
+          overall_score?: number | null
+          recorded_at?: string | null
+          review_id?: string | null
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_quality_scores_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "lesson_quality_scores_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_quality_scores_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["review_id"]
+          },
+          {
+            foreignKeyName: "lesson_quality_scores_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_reviews: {
         Row: {
           age_appropriate_score: number | null
           assessment_quality_score: number | null
           assigned_at: string | null
+          auto_assigned_at: string | null
           clarity_score: number | null
           completed_at: string | null
           content_accuracy_score: number | null
@@ -838,8 +1015,11 @@ export type Database = {
           id: string
           lesson_id: string
           overall_score: number | null
+          priority: string | null
+          review_duration_minutes: number | null
           reviewer_id: string | null
           reviewer_notes: string | null
+          revision_count: number | null
           started_at: string | null
           status: Database["public"]["Enums"]["review_status"]
           strengths: string | null
@@ -851,6 +1031,7 @@ export type Database = {
           age_appropriate_score?: number | null
           assessment_quality_score?: number | null
           assigned_at?: string | null
+          auto_assigned_at?: string | null
           clarity_score?: number | null
           completed_at?: string | null
           content_accuracy_score?: number | null
@@ -859,8 +1040,11 @@ export type Database = {
           id?: string
           lesson_id: string
           overall_score?: number | null
+          priority?: string | null
+          review_duration_minutes?: number | null
           reviewer_id?: string | null
           reviewer_notes?: string | null
+          revision_count?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["review_status"]
           strengths?: string | null
@@ -872,6 +1056,7 @@ export type Database = {
           age_appropriate_score?: number | null
           assessment_quality_score?: number | null
           assigned_at?: string | null
+          auto_assigned_at?: string | null
           clarity_score?: number | null
           completed_at?: string | null
           content_accuracy_score?: number | null
@@ -880,8 +1065,11 @@ export type Database = {
           id?: string
           lesson_id?: string
           overall_score?: number | null
+          priority?: string | null
+          review_duration_minutes?: number | null
           reviewer_id?: string | null
           reviewer_notes?: string | null
+          revision_count?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["review_status"]
           strengths?: string | null
@@ -1300,6 +1488,36 @@ export type Database = {
           },
         ]
       }
+      reviewer_performance: {
+        Row: {
+          avg_review_time_minutes: number | null
+          avg_score_given: number | null
+          id: string
+          reviewer_id: string
+          reviews_this_week: number | null
+          total_reviews: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_review_time_minutes?: number | null
+          avg_score_given?: number | null
+          id?: string
+          reviewer_id: string
+          reviews_this_week?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_review_time_minutes?: number | null
+          avg_score_given?: number | null
+          id?: string
+          reviewer_id?: string
+          reviews_this_week?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       reward_redemptions: {
         Row: {
           child_id: string
@@ -1593,6 +1811,73 @@ export type Database = {
           },
         ]
       }
+      student_lesson_performance: {
+        Row: {
+          attempts: number | null
+          avg_score: number | null
+          best_score: number | null
+          child_id: string
+          completed: boolean | null
+          first_attempt_at: string | null
+          id: string
+          last_attempt_at: string | null
+          lesson_id: string | null
+          mastered: boolean | null
+          struggled: boolean | null
+          total_time_spent_seconds: number | null
+        }
+        Insert: {
+          attempts?: number | null
+          avg_score?: number | null
+          best_score?: number | null
+          child_id: string
+          completed?: boolean | null
+          first_attempt_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          lesson_id?: string | null
+          mastered?: boolean | null
+          struggled?: boolean | null
+          total_time_spent_seconds?: number | null
+        }
+        Update: {
+          attempts?: number | null
+          avg_score?: number | null
+          best_score?: number | null
+          child_id?: string
+          completed?: boolean | null
+          first_attempt_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          lesson_id?: string | null
+          mastered?: boolean | null
+          struggled?: boolean | null
+          total_time_spent_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_lesson_performance_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_lesson_performance_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "student_lesson_performance_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -1780,6 +2065,17 @@ export type Database = {
         Args: { encryption_key: string; plaintext: string }
         Returns: string
       }
+      get_lesson_performance_overview: {
+        Args: { p_lesson_id: string }
+        Returns: {
+          avg_score: number
+          avg_time_minutes: number
+          completion_rate: number
+          difficulty_rating: number
+          sample_size: number
+          total_attempts: number
+        }[]
+      }
       get_review_statistics: {
         Args: never
         Returns: {
@@ -1791,6 +2087,16 @@ export type Database = {
           pending_reviews: number
           rejected_reviews: number
           total_reviews: number
+        }[]
+      }
+      get_struggling_students: {
+        Args: { p_lesson_id: string }
+        Returns: {
+          attempts: number
+          avg_score: number
+          child_id: string
+          child_name: string
+          last_attempt: string
         }[]
       }
       has_permission: {
@@ -1829,6 +2135,10 @@ export type Database = {
           p_target_child_id: string
         }
         Returns: Json
+      }
+      update_lesson_performance_metrics: {
+        Args: { p_lesson_id: string }
+        Returns: undefined
       }
     }
     Enums: {
