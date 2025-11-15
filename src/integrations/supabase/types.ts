@@ -2023,6 +2023,7 @@ export type Database = {
     }
     Functions: {
       add_admin_role: { Args: { _email: string }; Returns: undefined }
+      auto_assign_pending_reviews: { Args: never; Returns: Json }
       award_creator_points: {
         Args: {
           p_child_id: string

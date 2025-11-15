@@ -40,6 +40,7 @@ import Phase1LessonGeneration from "./pages/Phase1LessonGeneration";
 import SystemHealth from "./pages/SystemHealth";
 import LessonAnalytics from "./pages/LessonAnalytics";
 import LessonPerformanceAnalytics from "./pages/LessonPerformanceAnalytics";
+import StudentPerformanceReport from "./pages/StudentPerformanceReport";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -87,6 +88,8 @@ const App = () => (
             <Route path="/system-health" element={<SystemHealth />} />
             <Route path="/seed-lessons" element={<SeedLessons />} />
             <Route path="/phase1-lessons" element={<Phase1LessonGeneration />} />
+            <Route path="/lesson-performance/:lessonId" element={<LessonPerformanceAnalytics />} />
+            <Route path="/student-performance/:childId" element={<StudentPerformanceReport />} />
             <Route path="/admin-setup" element={<AdminSetup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

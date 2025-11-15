@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ParentLayout } from "@/components/layout/ParentLayout";
@@ -13,8 +13,9 @@ import { SubjectBadge } from "@/components/ui/subject-badge";
 import { BackButton } from "@/components/ui/back-button";
 import { 
   CheckCircle, XCircle, AlertTriangle, 
-  ArrowLeft, Save, Send 
+  ArrowLeft, Save, Send, Clock
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { Slider } from "@/components/ui/slider";
@@ -26,6 +27,9 @@ export default function LessonReview() {
   const [submitting, setSubmitting] = useState(false);
   const [lesson, setLesson] = useState<any>(null);
   const [review, setReview] = useState<any>(null);
+  const [priority, setPriority] = useState<string>('normal');
+  const [startTime] = useState<number>(Date.now());
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
 
   // Review form state
   const [scores, setScores] = useState({
@@ -46,6 +50,41 @@ export default function LessonReview() {
     loadReviewData();
   }, [reviewId]);
 
+  // Time tracking
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveDraft();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        const allScoresFilled = Object.values(scores).every(s => s > 0);
+        if (allScoresFilled) {
+          handleSubmitReview('approved');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [scores]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const loadReviewData = async () => {
     if (!reviewId) return;
 
@@ -62,6 +101,7 @@ export default function LessonReview() {
 
       setReview(reviewData);
       setLesson(reviewData.lessons);
+      setPriority(reviewData.priority || 'normal');
 
       // Populate existing scores if available
       if (reviewData.age_appropriate_score) {
@@ -97,6 +137,22 @@ export default function LessonReview() {
     setScores(prev => ({ ...prev, [key]: value[0] }));
   };
 
+  const handlePriorityChange = async (newPriority: string) => {
+    try {
+      const { error } = await supabase
+        .from('lesson_reviews')
+        .update({ priority: newPriority })
+        .eq('id', reviewId);
+      
+      if (error) throw error;
+      setPriority(newPriority);
+      toast.success('Priority updated');
+    } catch (error) {
+      console.error('Failed to update priority:', error);
+      toast.error('Failed to update priority');
+    }
+  };
+
   const handleSaveDraft = async () => {
     setSubmitting(true);
     try {
@@ -105,6 +161,7 @@ export default function LessonReview() {
         .update({
           ...scores,
           ...feedback,
+          priority,
           status: 'in_review',
           updated_at: new Date().toISOString(),
         })

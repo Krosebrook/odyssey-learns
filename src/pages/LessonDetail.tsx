@@ -19,6 +19,8 @@ import { CelebrationModal } from "@/components/celebration/CelebrationModal";
 import { checkAndAwardBadges } from "@/lib/badgeChecker";
 import * as analytics from "@/lib/analytics";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PerformanceQuickView } from "@/components/analytics/PerformanceQuickView";
 
 interface Lesson {
   id: string;
@@ -438,23 +440,40 @@ const LessonDetail = () => {
                 )}
               </>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </TabsContent>
 
-        {(isInProgress || isCompleted) && (
-          <>
-            <DigitalNotebook 
-              childId={childId!} 
-              lessonId={id!} 
-              lessonTitle={lesson.title} 
-            />
-            
-            <CollaborativeActivity 
-              childId={childId!} 
-              lessonId={id!} 
-            />
-          </>
-        )}
+          <TabsContent value="performance">
+            <CardContent className="space-y-6">
+              <PerformanceQuickView lessonId={id!} />
+              
+              <div className="text-center pt-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(`/lesson-performance/${id}`)}
+                >
+                  View Detailed Analytics
+                </Button>
+              </div>
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+      </Card>
+
+      {(isInProgress || isCompleted) && (
+        <>
+          <DigitalNotebook 
+            childId={childId!} 
+            lessonId={id!} 
+            lessonTitle={lesson.title} 
+          />
+          
+          <CollaborativeActivity 
+            childId={childId!} 
+            lessonId={id!} 
+          />
+        </>
+      )}
       </div>
     </AppLayout>
   );

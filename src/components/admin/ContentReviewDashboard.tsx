@@ -59,6 +59,9 @@ export function ContentReviewDashboard() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [selectedReviews, setSelectedReviews] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [gradeFilter, setGradeFilter] = useState<string>('all');
+  const [subjectFilter, setSubjectFilter] = useState<string>('all');
 
   useEffect(() => {
     loadReviewData();
@@ -88,6 +91,19 @@ export function ContentReviewDashboard() {
       toast.error('Failed to load review dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAutoAssign = async () => {
+    try {
+      const { data, error } = await supabase.rpc('auto_assign_pending_reviews');
+      if (error) throw error;
+      
+      toast.success(`${data.assigned_count} reviews auto-assigned successfully`);
+      loadReviewData();
+    } catch (error) {
+      console.error('Auto-assign failed:', error);
+      toast.error('Failed to auto-assign reviews');
     }
   };
 
@@ -268,18 +284,74 @@ export function ContentReviewDashboard() {
                 Review and approve AI-generated lessons
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 border rounded-md"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in_review">In Review</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="needs_revision">Needs Revision</option>
+          </select>
+          
+          <select
+            value={gradeFilter}
+            onChange={(e) => setGradeFilter(e.target.value)}
+            className="px-4 py-2 border rounded-md"
+          >
+            <option value="all">All Grades</option>
+            <option value="0">Kindergarten</option>
+            {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
+              <option key={g} value={g}>Grade {g}</option>
+            ))}
+          </select>
+          
+          <select
+            value={subjectFilter}
+            onChange={(e) => setSubjectFilter(e.target.value)}
+            className="px-4 py-2 border rounded-md"
+          >
+            <option value="all">All Subjects</option>
+            <option value="reading">Reading</option>
+            <option value="math">Math</option>
+            <option value="science">Science</option>
+            <option value="social">Social Studies</option>
+            <option value="lifeskills">Life Skills</option>
+          </select>
+          
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="px-4 py-2 border rounded-md"
+          >
+            <option value="all">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="normal">Normal</option>
+            <option value="low">Low</option>
+          </select>
+          
+          <Button onClick={handleAutoAssign} variant="outline">
+            Auto-Assign Reviews
+          </Button>
+        </div>
+
+        {/* Review Table */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Lesson Reviews</CardTitle>
+                <CardDescription>
+                  Review and approve AI-generated lessons
+                </CardDescription>
+              </div>
             </div>
-          </div>
-        </CardHeader>
+          </CardHeader>
         <CardContent>
           <Tabs value={filter} onValueChange={setFilter}>
             <TabsList>
