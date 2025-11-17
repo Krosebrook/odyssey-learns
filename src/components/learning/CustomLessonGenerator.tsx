@@ -29,14 +29,24 @@ export const CustomLessonGenerator = ({
       return;
     }
 
+    if (loading) {
+      toast.info('Generation already in progress...');
+      return; // Prevent duplicate requests
+    }
+
     setLoading(true);
+    
+    // Generate idempotency key for request deduplication
+    const idempotencyKey = `lesson-${childId}-${Date.now()}-${Math.random()}`;
+    
     try {
       const { data, error } = await supabase.functions.invoke('generate-custom-lesson', {
         body: {
           childId,
           topic: topic.trim(),
           subject,
-          gradeLevel
+          gradeLevel,
+          idempotencyKey, // Add deduplication support
         }
       });
 
@@ -45,6 +55,8 @@ export const CustomLessonGenerator = ({
       if (data.error) {
         if (data.error.includes('limit reached')) {
           toast.error('Daily limit reached! You can create 3 more lessons tomorrow.');
+        } else if (data.error.includes('already generating')) {
+          toast.info('A lesson is already being generated. Please wait...');
         } else {
           toast.error(data.error);
         }

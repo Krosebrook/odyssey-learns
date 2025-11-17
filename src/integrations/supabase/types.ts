@@ -863,6 +863,47 @@ export type Database = {
           },
         ]
       }
+      lesson_generation_dedup: {
+        Row: {
+          child_id: string | null
+          created_at: string | null
+          error_message: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string
+          lesson_id: string | null
+          status: string
+        }
+        Insert: {
+          child_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key: string
+          lesson_id?: string | null
+          status?: string
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string
+          lesson_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_generation_dedup_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_notes: {
         Row: {
           child_id: string
@@ -2099,6 +2140,7 @@ export type Database = {
         }
         Returns: Json
       }
+      cleanup_expired_dedup_records: { Args: never; Returns: undefined }
       cleanup_idempotency_cache: { Args: never; Returns: undefined }
       cleanup_old_error_logs: { Args: never; Returns: undefined }
       decrypt_emotion_field: {
