@@ -55,6 +55,27 @@ npm run build
 npm run preview
 ```
 
+### Phase 1 Testing & Validation
+
+Complete testing suite for validating Phase 1 critical fixes (rate limiting, database performance, AI batch operations):
+
+```bash
+# Run all Phase 1 tests (4-6 hours)
+./scripts/run-all-phase1-tests.sh
+
+# Or run individual test suites
+./scripts/phase1-load-test.sh        # Load & stress testing (1-2 hours)
+./scripts/phase1-database-test.sh    # Database performance (30-60 min)
+./scripts/phase1-ai-batch-test.sh    # AI batch operations (1-2 hours)
+```
+
+**Testing Documentation:**
+- [Testing Guide](./docs/TESTING_GUIDE.md) - Complete guide with troubleshooting
+- [Testing Report Template](./docs/PHASE1_TESTING_REPORT.md) - Results documentation
+- [Phase 1 Status](./docs/PHASE1_COMPLETION_STATUS.md) - Implementation details
+
+**CI/CD:** Automated testing runs daily via GitHub Actions (`.github/workflows/phase1-testing.yml`)
+
 ### Environment Configuration
 
 Environment variables are **auto-generated** by Lovable Cloud (DO NOT edit manually):

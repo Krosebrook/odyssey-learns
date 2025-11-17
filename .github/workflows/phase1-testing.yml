@@ -1,0 +1,217 @@
+name: Phase 1 Testing & Validation
+
+on:
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
+  # Uncomment to run on every push to main
+  # push:
+  #   branches: [ main ]
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+jobs:
+  load-stress-testing:
+    name: Load & Stress Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 180 # 3 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc curl
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/phase1-load-test.sh
+      
+      - name: Run load & stress tests
+        id: load-tests
+        run: |
+          echo "Starting load & stress testing..."
+          ./scripts/phase1-load-test.sh 2>&1 | tee load-test-results.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+      
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: load-test-results.txt
+          retention-days: 30
+      
+      - name: Check load test status
+        if: steps.load-tests.outputs.exit_code != '0'
+        run: |
+          echo "::error::Load & stress tests failed"
+          exit 1
+
+  database-performance:
+    name: Database Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 90 # 1.5 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc curl
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/phase1-database-test.sh
+      
+      - name: Run database tests
+        id: db-tests
+        run: |
+          echo "Starting database performance testing..."
+          ./scripts/phase1-database-test.sh 2>&1 | tee db-test-results.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+      
+      - name: Upload database test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: database-test-results
+          path: db-test-results.txt
+          retention-days: 30
+      
+      - name: Check database test status
+        if: steps.db-tests.outputs.exit_code != '0'
+        run: |
+          echo "::error::Database performance tests failed"
+          exit 1
+
+  ai-batch-operations:
+    name: AI & Batch Operations Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 180 # 3 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc curl
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/phase1-ai-batch-test.sh
+      
+      - name: Run AI batch tests
+        id: ai-tests
+        run: |
+          echo "Starting AI & batch operations testing..."
+          ./scripts/phase1-ai-batch-test.sh 2>&1 | tee ai-test-results.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+        continue-on-error: true
+      
+      - name: Upload AI test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-batch-test-results
+          path: ai-test-results.txt
+          retention-days: 30
+      
+      - name: Check AI test status
+        if: steps.ai-tests.outputs.exit_code != '0'
+        run: |
+          echo "::error::AI & batch operations tests failed"
+          exit 1
+
+  test-summary:
+    name: Generate Test Summary
+    runs-on: ubuntu-latest
+    needs: [load-stress-testing, database-performance, ai-batch-operations]
+    if: always()
+    
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+      
+      - name: Generate summary
+        run: |
+          echo "# Phase 1 Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Run:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Load & Stress Testing
+          echo "## Load & Stress Testing" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/load-test-results/load-test-results.txt ]; then
+            if grep -q "✓ All Phase 1 load tests passed!" test-results/load-test-results/load-test-results.txt; then
+              echo "✅ **PASSED**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **FAILED**" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -20 test-results/load-test-results/load-test-results.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **NOT RUN**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Database Performance
+          echo "## Database Performance Testing" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/database-test-results/db-test-results.txt ]; then
+            if grep -q "✓ All database performance tests passed!" test-results/database-test-results/db-test-results.txt; then
+              echo "✅ **PASSED**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **FAILED**" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -20 test-results/database-test-results/db-test-results.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **NOT RUN**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # AI & Batch Operations
+          echo "## AI & Batch Operations Testing" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/ai-batch-test-results/ai-test-results.txt ]; then
+            if grep -q "✓ All AI & batch operation tests passed!" test-results/ai-batch-test-results/ai-test-results.txt; then
+              echo "✅ **PASSED**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **FAILED**" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -20 test-results/ai-batch-test-results/ai-test-results.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **NOT RUN**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall Status
+          echo "## Overall Status" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.load-stress-testing.result }}" == "success" ] && \
+             [ "${{ needs.database-performance.result }}" == "success" ] && \
+             [ "${{ needs.ai-batch-operations.result }}" == "success" ]; then
+            echo "✅ **ALL TESTS PASSED** - Application ready for Phase 2" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **SOME TESTS FAILED** - Review failures and fix before proceeding" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Fail workflow if tests failed
+        if: |
+          needs.load-stress-testing.result != 'success' ||
+          needs.database-performance.result != 'success' ||
+          needs.ai-batch-operations.result != 'success'
+        run: |
+          echo "::error::Phase 1 testing failed. Review test results and fix issues."
+          exit 1
