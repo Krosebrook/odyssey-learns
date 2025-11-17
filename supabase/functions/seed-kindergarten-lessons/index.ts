@@ -1,5 +1,6 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "jsr:@supabase/supabase-js@2";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -641,7 +642,7 @@ Make questions simple with picture-based or visual options appropriate for 5-6 y
 
       } catch (error) {
         console.error(`Error generating lesson ${outline.title}:`, error);
-        errors.push({ lesson: outline.title, error: error.message });
+        errors.push({ lesson: outline.title, error: (error as Error).message });
       }
     }
 
@@ -659,7 +660,7 @@ Make questions simple with picture-based or visual options appropriate for 5-6 y
     console.error('Seed function error:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: (error as Error).message 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

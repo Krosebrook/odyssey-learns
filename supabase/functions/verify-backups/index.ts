@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     const errorResult = {
       timestamp: new Date().toISOString(),
       status: 'error',
-      error: error.message,
+      error: (error as Error).message,
       checks_passed: false
     };
 

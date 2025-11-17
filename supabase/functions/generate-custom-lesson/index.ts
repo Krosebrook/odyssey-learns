@@ -35,31 +35,13 @@ serve(async (req) => {
     }
 
     // Rate limiting: 10 custom lessons per day per user
-    const rateLimitResult = await rateLimitMiddleware({
-      supabase,
-      userId: user.id,
+    const rateLimitResult = await rateLimitMiddleware(req, {
       endpoint: 'generate-custom-lesson',
       maxRequests: 10,
-      windowMinutes: 1440, // 24 hours
+      windowMinutes: 1440 // 24 hours
     });
 
-    if (!rateLimitResult.allowed) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Rate limit exceeded',
-          message: 'You can generate up to 10 custom lessons per day',
-          retryAfter: rateLimitResult.retryAfter
-        }), 
-        {
-          status: 429,
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Retry-After': rateLimitResult.retryAfter?.toString() || '3600'
-          }
-        }
-      );
-    }
+    if (rateLimitResult) return rateLimitResult;
 
     const { childId, topic, subject, gradeLevel } = await req.json();
 
