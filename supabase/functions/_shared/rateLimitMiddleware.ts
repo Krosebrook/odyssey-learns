@@ -44,7 +44,7 @@ interface RateLimitResult {
 export async function checkRateLimit(
   userId: string,
   config: RateLimitConfig,
-  supabase: ReturnType<typeof createClient>
+  supabase: any
 ): Promise<RateLimitResult> {
   try {
     const { data, error } = await supabase.rpc('check_rate_limit', {

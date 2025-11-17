@@ -29,31 +29,13 @@ serve(async (req) => {
     }
 
     // Rate limiting: 5 share requests per day per user
-    const rateLimitResult = await rateLimitMiddleware({
-      supabase,
-      userId: user.id,
+    const rateLimitResult = await rateLimitMiddleware(req, {
       endpoint: 'request-lesson-share',
       maxRequests: 5,
-      windowMinutes: 1440, // 24 hours
+      windowMinutes: 1440 // 24 hours
     });
 
-    if (!rateLimitResult.allowed) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Rate limit exceeded',
-          message: 'You can request up to 5 lesson shares per day',
-          retryAfter: rateLimitResult.retryAfter
-        }), 
-        {
-          status: 429,
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Retry-After': rateLimitResult.retryAfter?.toString() || '3600'
-          }
-        }
-      );
-    }
+    if (rateLimitResult) return rateLimitResult;
 
     const { lessonId } = await req.json();
 
