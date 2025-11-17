@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { rateLimitMiddleware } from "../_shared/rateLimitMiddleware.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,6 +32,33 @@ serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
+    }
+
+    // Rate limiting: 10 custom lessons per day per user
+    const rateLimitResult = await rateLimitMiddleware({
+      supabase,
+      userId: user.id,
+      endpoint: 'generate-custom-lesson',
+      maxRequests: 10,
+      windowMinutes: 1440, // 24 hours
+    });
+
+    if (!rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded',
+          message: 'You can generate up to 10 custom lessons per day',
+          retryAfter: rateLimitResult.retryAfter
+        }), 
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': rateLimitResult.retryAfter?.toString() || '3600'
+          }
+        }
+      );
     }
 
     const { childId, topic, subject, gradeLevel } = await req.json();

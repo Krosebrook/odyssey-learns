@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { rateLimitMiddleware } from "../_shared/rateLimitMiddleware.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,33 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting: 5 share requests per day per user
+    const rateLimitResult = await rateLimitMiddleware({
+      supabase,
+      userId: user.id,
+      endpoint: 'request-lesson-share',
+      maxRequests: 5,
+      windowMinutes: 1440, // 24 hours
+    });
+
+    if (!rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded',
+          message: 'You can request up to 5 lesson shares per day',
+          retryAfter: rateLimitResult.retryAfter
+        }), 
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': rateLimitResult.retryAfter?.toString() || '3600'
+          }
+        }
       );
     }
 

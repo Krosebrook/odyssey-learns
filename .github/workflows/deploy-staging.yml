@@ -37,8 +37,33 @@ jobs:
         run: |
           npx supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
       
+      - name: Wait for deployment
+        run: sleep 30
+      
+      - name: Run smoke tests
+        run: |
+          chmod +x ./scripts/staging-smoke-tests.sh
+          STAGING_URL=https://staging.innerodyssey.lovable.app ./scripts/staging-smoke-tests.sh
+        continue-on-error: true
+        id: smoke_tests
+      
+      - name: Check smoke test results
+        if: steps.smoke_tests.outcome == 'failure'
+        run: |
+          echo "⚠️ Smoke tests failed! Review logs before proceeding."
+          echo "Deployment completed but verification failed."
+          exit 1
+      
       - name: Notify team
         if: always()
         run: |
-          echo "Staging deployment completed: ${{ job.status }}"
-          # Add Slack/Discord webhook here
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ Staging deployment successful!"
+          else
+            echo "❌ Staging deployment failed!"
+          fi
+          # TODO: Add Slack/Discord webhook notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"Staging deployment: '"$STATUS"'"}'
