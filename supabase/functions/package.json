@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "openai": "^4.52.5"
+    "openai": "^4.52.5",
+    "@supabase/realtime-js": "^2.15.5"
   }
 }
