@@ -2,7 +2,7 @@ import { toast } from 'sonner';
 
 /**
  * Global error handler for unhandled errors and promise rejections
- * Provides consistent error handling across the application
+ * Production-grade implementation with batching and retry logic
  */
 
 export interface ErrorContext {
@@ -21,42 +21,128 @@ export interface HandledError {
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
+// Batch configuration for database logging
+const ERROR_BATCH_SIZE = 10;
+const ERROR_BATCH_TIMEOUT = 5000; // 5 seconds
+let errorBatch: HandledError[] = [];
+let batchTimeout: NodeJS.Timeout | null = null;
+
 /**
- * Log error to monitoring service and database
+ * Flush error batch to database
  */
-const logError = async (error: HandledError) => {
-  console.error('[Error Handler]', error);
+const flushErrorBatch = async () => {
+  if (errorBatch.length === 0) return;
+
+  const batch = [...errorBatch];
+  errorBatch = [];
   
-  // Log to database for centralized monitoring
+  if (batchTimeout) {
+    clearTimeout(batchTimeout);
+    batchTimeout = null;
+  }
+
   try {
     const { supabase } = await import('@/integrations/supabase/client');
-    await supabase.from('error_logs').insert({
+    
+    const records = batch.map(error => ({
       user_id: error.context.userId || null,
-      error_message: error.message,
-      error_stack: error.stack || null,
+      error_message: error.message.substring(0, 500), // Limit length
+      error_stack: error.stack?.substring(0, 2000) || null, // Limit length
       severity: error.severity,
-      component: error.context.component || null,
-      action: error.context.action || null,
-      url: error.context.url,
-      user_agent: error.context.userAgent,
+      component: error.context.component?.substring(0, 100) || null,
+      action: error.context.action?.substring(0, 100) || null,
+      url: error.context.url.substring(0, 500),
+      user_agent: error.context.userAgent.substring(0, 500),
       metadata: {
         timestamp: error.context.timestamp,
-        ...error.context
+        batchSize: batch.length
       }
-    });
-  } catch (dbError) {
-    console.warn('Failed to log error to database:', dbError);
+    }));
+
+    const { error: dbError } = await supabase.from('error_logs').insert(records);
+    
+    if (dbError) {
+      console.error('[Error Handler] Failed to log error batch:', dbError);
+      storeFailedBatch(batch);
+    }
+  } catch (error) {
+    console.error('[Error Handler] Critical: Failed to flush error batch:', error);
+    storeFailedBatch(batch);
   }
-  
-  // Store critical errors locally as backup
+};
+
+/**
+ * Store failed batch locally for retry
+ */
+const storeFailedBatch = (batch: HandledError[]) => {
+  try {
+    const failed = JSON.parse(localStorage.getItem('failed_error_batches') || '[]');
+    failed.push(...batch);
+    localStorage.setItem('failed_error_batches', JSON.stringify(failed.slice(-50)));
+  } catch (e) {
+    console.error('[Error Handler] Failed to store error batch locally:', e);
+  }
+};
+
+/**
+ * Retry failed batches
+ */
+export const retryFailedBatches = async () => {
+  try {
+    const failed = JSON.parse(localStorage.getItem('failed_error_batches') || '[]');
+    if (failed.length === 0) return;
+
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const records = failed.map((error: HandledError) => ({
+      user_id: error.context.userId || null,
+      error_message: error.message.substring(0, 500),
+      error_stack: error.stack?.substring(0, 2000) || null,
+      severity: error.severity,
+      component: error.context.component?.substring(0, 100) || null,
+      action: error.context.action?.substring(0, 100) || null,
+      url: error.context.url.substring(0, 500),
+      user_agent: error.context.userAgent.substring(0, 500),
+      metadata: { timestamp: error.context.timestamp, retry: true }
+    }));
+
+    const { error: dbError } = await supabase.from('error_logs').insert(records);
+    
+    if (!dbError) {
+      localStorage.removeItem('failed_error_batches');
+      console.log('[Error Handler] Successfully retried failed batches');
+    }
+  } catch (error) {
+    console.error('[Error Handler] Failed to retry batches:', error);
+  }
+};
+
+/**
+ * Add error to batch and schedule flush
+ */
+const addToBatch = (error: HandledError) => {
+  errorBatch.push(error);
+
+  // Store critical errors immediately to local storage
   if (error.severity === 'critical' || error.severity === 'high') {
     try {
       const errors = JSON.parse(localStorage.getItem('critical_errors') || '[]');
       errors.push(error);
       localStorage.setItem('critical_errors', JSON.stringify(errors.slice(-20)));
     } catch (e) {
-      console.error('Failed to store error locally:', e);
+      console.error('[Error Handler] Failed to store critical error locally:', e);
     }
+  }
+
+  // Flush immediately if batch is full
+  if (errorBatch.length >= ERROR_BATCH_SIZE) {
+    flushErrorBatch();
+    return;
+  }
+
+  // Schedule batch flush
+  if (!batchTimeout) {
+    batchTimeout = setTimeout(flushErrorBatch, ERROR_BATCH_TIMEOUT);
   }
 };
 
@@ -71,19 +157,27 @@ export const handleError = async (
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
   
+  const sanitizedContext: ErrorContext = {
+    timestamp: new Date().toISOString(),
+    url: window.location.href,
+    userAgent: navigator.userAgent,
+    component: context.component?.substring(0, 100),
+    action: context.action?.substring(0, 100),
+    userId: context.userId,
+  };
+
   const handledError: HandledError = {
-    message: errorMessage,
-    stack: errorStack,
-    context: {
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      ...context,
-    },
+    message: errorMessage.substring(0, 500),
+    stack: errorStack?.substring(0, 2000),
+    context: sanitizedContext,
     severity: determineSeverity(errorMessage),
   };
 
-  await logError(handledError);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('[Error Handler]', handledError);
+  }
+
+  addToBatch(handledError);
 
   if (showToast) {
     const userMessage = getUserFriendlyMessage(errorMessage);
@@ -97,7 +191,7 @@ export const handleError = async (
       toast.error(userMessage, {
         duration: 5000,
       });
-    } else {
+    } else if (handledError.severity === 'medium') {
       toast.warning(userMessage, {
         duration: 3000,
       });
@@ -112,86 +206,113 @@ const determineSeverity = (message: string): HandledError['severity'] => {
   const lowerMessage = message.toLowerCase();
   
   if (
-    lowerMessage.includes('network') ||
-    lowerMessage.includes('fetch') ||
-    lowerMessage.includes('timeout')
+    lowerMessage.includes('database') ||
+    lowerMessage.includes('server error') ||
+    lowerMessage.includes('internal error') ||
+    lowerMessage.includes('crash') ||
+    lowerMessage.includes('fatal')
   ) {
-    return 'medium';
+    return 'critical';
   }
   
   if (
     lowerMessage.includes('unauthorized') ||
     lowerMessage.includes('forbidden') ||
-    lowerMessage.includes('authentication')
+    lowerMessage.includes('authentication') ||
+    lowerMessage.includes('permission denied') ||
+    lowerMessage.includes('security')
   ) {
     return 'high';
   }
   
   if (
-    lowerMessage.includes('database') ||
-    lowerMessage.includes('server error') ||
-    lowerMessage.includes('internal error')
+    lowerMessage.includes('network') ||
+    lowerMessage.includes('fetch') ||
+    lowerMessage.includes('timeout') ||
+    lowerMessage.includes('connection') ||
+    lowerMessage.includes('abort')
   ) {
-    return 'critical';
+    return 'medium';
   }
   
   return 'low';
 };
 
 /**
- * Convert technical error messages to user-friendly ones
+ * Convert technical error messages to user-friendly messages
  */
 const getUserFriendlyMessage = (technicalMessage: string): string => {
   const lowerMessage = technicalMessage.toLowerCase();
   
   if (lowerMessage.includes('network') || lowerMessage.includes('fetch')) {
-    return 'Unable to connect. Please check your internet connection.';
-  }
-  
-  if (lowerMessage.includes('unauthorized') || lowerMessage.includes('forbidden')) {
-    return 'You don\'t have permission to perform this action.';
-  }
-  
-  if (lowerMessage.includes('not found')) {
-    return 'The requested resource could not be found.';
+    return 'Unable to connect to the server. Please check your internet connection.';
   }
   
   if (lowerMessage.includes('timeout')) {
     return 'The request took too long. Please try again.';
   }
   
+  if (lowerMessage.includes('unauthorized') || lowerMessage.includes('authentication')) {
+    return 'You need to sign in to continue.';
+  }
+  
+  if (lowerMessage.includes('forbidden') || lowerMessage.includes('permission')) {
+    return 'You don\'t have permission to perform this action.';
+  }
+  
+  if (lowerMessage.includes('not found')) {
+    return 'The requested resource was not found.';
+  }
+  
+  if (lowerMessage.includes('database')) {
+    return 'A database error occurred. Our team has been notified.';
+  }
+  
   if (lowerMessage.includes('rate limit')) {
     return 'Too many requests. Please wait a moment and try again.';
   }
   
-  // Default to technical message for development
-  return process.env.NODE_ENV === 'development' 
-    ? technicalMessage 
-    : 'Something went wrong. Please try again.';
+  // Generic message for unknown errors
+  return 'Something went wrong. Please try again later.';
 };
 
 /**
- * Initialize global error handlers
+ * Setup global error handlers
  */
-export const initializeErrorHandlers = () => {
+export const setupGlobalErrorHandlers = () => {
+  // Handle unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    event.preventDefault();
+    handleError(event.reason, {
+      component: 'global',
+      action: 'unhandled_promise_rejection',
+    });
+  });
+
   // Handle uncaught errors
   window.addEventListener('error', (event) => {
-    handleError(event.error, {
-      component: 'window',
+    event.preventDefault();
+    handleError(event.error || event.message, {
+      component: 'global',
       action: 'uncaught_error',
     });
   });
 
-  // Handle unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
-    handleError(event.reason, {
-      component: 'window',
-      action: 'unhandled_rejection',
-    });
+  // Retry failed batches on page load
+  retryFailedBatches();
+
+  // Flush any remaining errors before page unload
+  window.addEventListener('beforeunload', () => {
+    flushErrorBatch();
   });
 
   console.log('[Error Handler] Global error handlers initialized');
 };
+
+/**
+ * Manually flush error batch (useful for testing)
+ */
+export const flushErrors = flushErrorBatch;
 
 /**
  * Get all stored errors for debugging/support
@@ -209,5 +330,5 @@ export const getStoredErrors = (): HandledError[] => {
  */
 export const clearStoredErrors = (): void => {
   localStorage.removeItem('critical_errors');
-  localStorage.removeItem('app_errors');
+  localStorage.removeItem('failed_error_batches');
 };
