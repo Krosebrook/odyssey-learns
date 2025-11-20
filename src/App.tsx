@@ -10,6 +10,8 @@ import { ParentRoutes } from "./routes/ParentRoutes";
 import { ChildRoutes } from "./routes/ChildRoutes";
 import { AdminRoutes } from "./routes/AdminRoutes";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
+import { PWAInstallPrompt } from "./components/pwa/PWAInstallPrompt";
+import { PWAUpdatePrompt } from "./components/pwa/PWAUpdatePrompt";
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -36,6 +38,8 @@ const App = () => (
           <AuthProvider>
             <Toaster />
             <Sonner />
+            <PWAInstallPrompt />
+            <PWAUpdatePrompt />
             <Routes>
               {/* Authentication routes */}
               <Route path="/login" element={<AuthRoutes />} />
