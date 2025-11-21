@@ -69,7 +69,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in px-4 pt-28 pb-20\n">
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in px-4 pt-28 pb-20">
             <Badge variant="secondary" className="text-sm px-4 py-1.5">
               🎉 Now in Beta - Join 2,500+ Families
             </Badge>
