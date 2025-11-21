@@ -74,24 +74,24 @@ const Landing = () => {
               🎉 Now in Beta - Join 2,500+ Families
             </Badge>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto">
               Transform Learning Into An
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"> Epic Adventure</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5B5BFF] via-[#3BB9A5] to-[#C6D467]"> Epic</span> Adventure
             </h1>
             
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto border border-blue-300 rounded-md p-4 backdrop-blur-sm bg-white/20">
               The only K-12 platform that combines emotional intelligence, academic excellence, 
               and real-world life skills through engaging, personalized learning journeys.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button size="lg" onClick={() => navigate('/login')} className="text-lg h-14 px-8 shadow-xl hover-scale">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <button onClick={() => navigate('/login')} className="bg-indigo-600 text-white font-semibold px-8 py-4 rounded-xl hover:bg-indigo-700 transition">
                 Start Free Beta Access
-                <Sparkles className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('/contact')} className="text-lg h-14 px-8">
+                <Sparkles className="ml-2 h-5 w-5 inline" />
+              </button>
+              <button onClick={() => navigate('/contact')} className="border border-gray-300 bg-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition">
                 Watch Demo
-              </Button>
+              </button>
             </div>
 
             <div className="flex items-center justify-center gap-8 pt-8 text-sm text-muted-foreground">
