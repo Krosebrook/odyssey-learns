@@ -3,42 +3,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Brain, BookOpen, Heart, Sparkles, Users, TrendingUp, Shield, Zap } from "lucide-react";
-
 const Landing = () => {
   const navigate = useNavigate();
-
-  const features = [
-    {
-      icon: Heart,
-      title: "Emotional Intelligence",
-      description: "Build self-awareness, empathy, and coping strategies through guided activities and reflection.",
-      color: "text-primary"
-    },
-    {
-      icon: BookOpen,
-      title: "Academic Excellence",
-      description: "Standards-aligned content across all subjects with adaptive difficulty and personalized learning paths.",
-      color: "text-secondary"
-    },
-    {
-      icon: Brain,
-      title: "Real-World Life Skills",
-      description: "Financial literacy, time management, communication, and problem-solving for real-world success.",
-      color: "text-accent"
-    }
-  ];
-
-  const benefits = [
-    { icon: Sparkles, text: "Age-adaptive gamification that grows with your child" },
-    { icon: Users, text: "Parent dashboard with real-time progress insights" },
-    { icon: TrendingUp, text: "Personalized learning paths based on performance" },
-    { icon: Shield, text: "COPPA compliant with industry-leading privacy" },
-    { icon: Zap, text: "Engaging quests and rewards that motivate learning" },
-    { icon: Brain, text: "Builds emotional intelligence alongside academics" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+  const features = [{
+    icon: Heart,
+    title: "Emotional Intelligence",
+    description: "Build self-awareness, empathy, and coping strategies through guided activities and reflection.",
+    color: "text-primary"
+  }, {
+    icon: BookOpen,
+    title: "Academic Excellence",
+    description: "Standards-aligned content across all subjects with adaptive difficulty and personalized learning paths.",
+    color: "text-secondary"
+  }, {
+    icon: Brain,
+    title: "Real-World Life Skills",
+    description: "Financial literacy, time management, communication, and problem-solving for real-world success.",
+    color: "text-accent"
+  }];
+  const benefits = [{
+    icon: Sparkles,
+    text: "Age-adaptive gamification that grows with your child"
+  }, {
+    icon: Users,
+    text: "Parent dashboard with real-time progress insights"
+  }, {
+    icon: TrendingUp,
+    text: "Personalized learning paths based on performance"
+  }, {
+    icon: Shield,
+    text: "COPPA compliant with industry-leading privacy"
+  }, {
+    icon: Zap,
+    text: "Engaging quests and rewards that motivate learning"
+  }, {
+    icon: Brain,
+    text: "Builds emotional intelligence alongside academics"
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       {/* Navigation */}
       <nav className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,7 +69,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
-          <div className="text-center space-y-8 animate-fade-in">
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in px-4 pt-28 pb-20\n">
             <Badge variant="secondary" className="text-sm px-4 py-1.5">
               🎉 Now in Beta - Join 2,500+ Families
             </Badge>
@@ -83,20 +85,11 @@ const Landing = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/login')}
-                className="text-lg h-14 px-8 shadow-xl hover-scale"
-              >
+              <Button size="lg" onClick={() => navigate('/login')} className="text-lg h-14 px-8 shadow-xl hover-scale">
                 Start Free Beta Access
                 <Sparkles className="ml-2 h-5 w-5" />
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => navigate('/contact')}
-                className="text-lg h-14 px-8"
-              >
+              <Button size="lg" variant="outline" onClick={() => navigate('/contact')} className="text-lg h-14 px-8">
                 Watch Demo
               </Button>
             </div>
@@ -137,11 +130,7 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="elevated-card hover-scale transition-all duration-300 border-2"
-              >
+            {features.map((feature, index) => <Card key={index} className="elevated-card hover-scale transition-all duration-300 border-2">
                 <CardHeader>
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-4`}>
                     <feature.icon className={`h-7 w-7 ${feature.color}`} />
@@ -153,8 +142,7 @@ const Landing = () => {
                     {feature.description}
                   </CardDescription>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -174,14 +162,12 @@ const Landing = () => {
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4 pt-4">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                {benefits.map((benefit, index) => <div key={index} className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <benefit.icon className="h-5 w-5 text-primary" />
                     </div>
                     <p className="text-sm leading-relaxed pt-1">{benefit.text}</p>
-                  </div>
-                ))}
+                  </div>)}
               </div>
 
               <Button size="lg" className="mt-6" onClick={() => navigate('/login')}>
@@ -226,19 +212,10 @@ const Landing = () => {
             No credit card required, cancel anytime.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/login')}
-              className="text-lg h-14 px-8 shadow-xl"
-            >
+            <Button size="lg" onClick={() => navigate('/login')} className="text-lg h-14 px-8 shadow-xl">
               Start Free Today
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/contact')}
-              className="text-lg h-14 px-8"
-            >
+            <Button size="lg" variant="outline" onClick={() => navigate('/contact')} className="text-lg h-14 px-8">
               Talk To Our Team
             </Button>
           </div>
@@ -294,8 +271,6 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
