@@ -55,24 +55,23 @@ export const LoginForm = () => {
         return;
       }
 
-      // Execute reCAPTCHA
-      const recaptchaToken = await executeRecaptcha('login');
-      if (recaptchaToken) {
-        try {
+      // Execute reCAPTCHA (graceful - never blocks login)
+      try {
+        const recaptchaToken = await executeRecaptcha('login');
+        if (recaptchaToken) {
           const { supabase } = await import('@/integrations/supabase/client');
           const { data: verifyResult } = await supabase.functions.invoke('verify-recaptcha', {
             body: { token: recaptchaToken, action: 'login' }
           });
-
-          if (!verifyResult?.valid) {
-            toast.error('Security verification failed. Please try again.');
-            setLoading(false);
-            return;
+          
+          if (verifyResult?.suspicious) {
+            console.warn('reCAPTCHA flagged suspicious activity:', verifyResult);
+            // Continue with login but activity is logged
           }
-        } catch (verifyError) {
-          console.warn('reCAPTCHA verification failed:', verifyError);
-          // Continue with login but log the issue
         }
+      } catch (verifyError) {
+        console.warn('reCAPTCHA verification skipped:', verifyError);
+        // Continue with login - reCAPTCHA should never block auth
       }
 
       const { error } = await signIn(validation.data.email, validation.data.password);

@@ -68,19 +68,23 @@ export const SignupForm = () => {
         return;
       }
 
-      // Execute and verify reCAPTCHA
-      const recaptchaToken = await executeRecaptcha('signup');
-      if (recaptchaToken) {
-        const { supabase } = await import('@/integrations/supabase/client');
-        const { data: verifyResult, error: verifyError } = await supabase.functions.invoke('verify-recaptcha', {
-          body: { token: recaptchaToken, action: 'signup' }
-        });
-
-        if (verifyError || !verifyResult?.valid) {
-          toast.error('Security verification failed. Please try again.');
-          setLoading(false);
-          return;
+      // Execute reCAPTCHA (graceful - never blocks signup)
+      try {
+        const recaptchaToken = await executeRecaptcha('signup');
+        if (recaptchaToken) {
+          const { supabase } = await import('@/integrations/supabase/client');
+          const { data: verifyResult } = await supabase.functions.invoke('verify-recaptcha', {
+            body: { token: recaptchaToken, action: 'signup' }
+          });
+          
+          if (verifyResult?.suspicious) {
+            console.warn('reCAPTCHA flagged suspicious activity:', verifyResult);
+            // Continue but activity is logged
+          }
         }
+      } catch (verifyError) {
+        console.warn('reCAPTCHA verification skipped:', verifyError);
+        // Continue with signup - reCAPTCHA should never block auth
       }
 
       const { error } = await signUp(result.data.email, result.data.password, result.data.fullName);
