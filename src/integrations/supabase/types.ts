@@ -2369,6 +2369,16 @@ export type Database = {
       }
     }
     Views: {
+      creator_leaderboard: {
+        Row: {
+          badge_count: number | null
+          display_name: string | null
+          level: number | null
+          rank: number | null
+          total_points: number | null
+        }
+        Relationships: []
+      }
       lesson_review_dashboard: {
         Row: {
           assigned_at: string | null
