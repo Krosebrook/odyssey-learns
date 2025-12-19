@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,6 @@ const Auth = () => {
   // Redirect authenticated users
   useEffect(() => {
     if (!loading && user) {
-      // Redirect based on role
       if (isAdmin) {
         navigate("/admin", { replace: true });
       } else {
@@ -37,69 +38,76 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <AuthLayout>
         <div className="text-center space-y-4">
           <LoadingSpinner size="lg" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   // Don't render auth form if already logged in (will redirect)
   if (user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-        <LoadingSpinner size="lg" />
-      </div>
+      <AuthLayout>
+        <div className="flex justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <div className="w-full max-w-md space-y-8 animate-fade-in">
-        <div className="text-center">
-          <div className="inline-block w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center mb-4 shadow-elevated">
-            <span className="text-3xl font-bold text-primary-foreground">IO</span>
-          </div>
-          <h1 className="text-3xl font-bold">Welcome to Inner Odyssey</h1>
-          <p className="text-muted-foreground mt-2">
-            Empowering kids to learn and grow
-          </p>
-        </div>
+    <AuthLayout>
+      <AuthHeader 
+        showLogo 
+        title="Welcome to Inner Odyssey" 
+        description="Empowering kids to learn and grow"
+      />
 
-        <Card className="p-6 elevated-card">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "signup")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+      <Card className="p-6 elevated-card">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(v) => setActiveTab(v as "login" | "signup")} 
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="login">
-              <LoginForm />
-            </TabsContent>
+          <TabsContent value="login">
+            <LoginForm />
+          </TabsContent>
 
-            <TabsContent value="signup">
-              <SignupForm />
-            </TabsContent>
-          </Tabs>
-        </Card>
+          <TabsContent value="signup">
+            <SignupForm />
+          </TabsContent>
+        </Tabs>
+      </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+      <p className="text-center text-sm text-muted-foreground">
+        By continuing, you agree to our{" "}
+        <Link to="/terms" className="text-primary hover:underline">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link to="/privacy" className="text-primary hover:underline">
+          Privacy Policy
+        </Link>
+      </p>
 
-        <div className="text-center">
-          <Button
-            variant="link"
-            onClick={() => navigate('/admin-setup')}
-            className="text-xs text-muted-foreground hover:text-primary"
-          >
-            Need to set up an admin? Click here
-          </Button>
-        </div>
+      <div className="text-center">
+        <Button
+          variant="link"
+          onClick={() => navigate("/admin-setup")}
+          className="text-xs text-muted-foreground hover:text-primary"
+        >
+          Need to set up an admin? Click here
+        </Button>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 

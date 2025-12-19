@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PasswordInput } from "@/components/ui/password-input";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { FormField } from "@/components/auth/FormField";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,20 +14,28 @@ const UpdatePassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
   const navigate = useNavigate();
+
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords don't match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
-
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
@@ -39,69 +47,77 @@ const UpdatePassword = () => {
       if (error) throw error;
 
       toast.success("Password updated successfully!");
-      navigate("/parent-dashboard");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update password");
+      navigate("/parent");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to update password";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
+  const isValid = password.length >= 8 && password === confirmPassword;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <div className="w-full max-w-md">
-        <Card className="p-6">
-          <CardHeader>
-            <div className="flex justify-center mb-4">
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                <Lock className="h-7 w-7 text-primary" />
-              </div>
+    <AuthLayout>
+      <Card className="elevated-card">
+        <CardHeader className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+              <Lock className="h-7 w-7 text-primary" />
             </div>
-            <CardTitle className="text-center">Set New Password</CardTitle>
-            <CardDescription className="text-center">
-              Choose a strong password for your account
-            </CardDescription>
-          </CardHeader>
+          </div>
+          <CardTitle>Set New Password</CardTitle>
+          <CardDescription>
+            Choose a strong password for your account
+          </CardDescription>
+        </CardHeader>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
-                <PasswordInput
-                  id="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="focus-ring"
-                />
-                <PasswordStrengthMeter password={password} />
-              </div>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <FormField
+              id="new-password"
+              label="New Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(value) => {
+                setPassword(value);
+                setErrors((prev) => ({ ...prev, password: undefined }));
+              }}
+              error={errors.password}
+              maxLength={128}
+              autoComplete="new-password"
+            >
+              <PasswordStrengthMeter password={password} />
+            </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <PasswordInput
-                  id="confirmPassword"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="focus-ring"
-                />
-              </div>
+            <FormField
+              id="confirm-new-password"
+              label="Confirm New Password"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(value) => {
+                setConfirmPassword(value);
+                setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+              }}
+              error={errors.confirmPassword}
+              maxLength={128}
+              autoComplete="new-password"
+            />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading || password !== confirmPassword || password.length < 8}
-              >
-                {loading ? <LoadingSpinner size="sm" /> : "Update Password"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !isValid}
+            >
+              {loading ? <LoadingSpinner size="sm" /> : "Update Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </AuthLayout>
   );
 };
 

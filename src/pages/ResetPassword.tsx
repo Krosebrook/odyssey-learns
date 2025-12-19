@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackButton } from "@/components/ui/back-button";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { FormField } from "@/components/auth/FormField";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Mail } from "lucide-react";
+import { Mail, CheckCircle } from "lucide-react";
 import { checkServerRateLimit, RATE_LIMITS } from "@/lib/rateLimiter";
 
 const ResetPassword = () => {
@@ -20,7 +20,6 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // Check rate limit before sending reset email
       const rateLimit = await checkServerRateLimit(
         RATE_LIMITS.PASSWORD_RESET.endpoint,
         RATE_LIMITS.PASSWORD_RESET.maxRequests,
@@ -41,17 +40,15 @@ const ResetPassword = () => {
       });
 
       if (error) {
-        // Enhanced error handling for rate limiting
-        if (error.message?.toLowerCase().includes('rate limit') || 
-            error.message?.toLowerCase().includes('too many requests')) {
+        if (error.message?.toLowerCase().includes("rate limit") || 
+            error.message?.toLowerCase().includes("too many requests")) {
           toast.error(
             "Too many reset attempts. Please wait 1 hour before trying again.",
             { duration: 8000 }
           );
-        } else if (error.message?.toLowerCase().includes('email') && 
-                   error.message?.toLowerCase().includes('not found')) {
+        } else if (error.message?.toLowerCase().includes("email") && 
+                   error.message?.toLowerCase().includes("not found")) {
           // Don't reveal if email exists (security best practice)
-          // Show same success message as valid emails
           setEmailSent(true);
           toast.success("If that email is registered, you'll receive a reset link.");
         } else {
@@ -61,8 +58,7 @@ const ResetPassword = () => {
         setEmailSent(true);
         toast.success("Password reset email sent! Check your inbox.");
       }
-    } catch (error: any) {
-      // Catch-all for unexpected errors
+    } catch (error) {
       console.error("Password reset error:", error);
       toast.error("An unexpected error occurred. Please try again later.");
     } finally {
@@ -71,19 +67,23 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4">
-      <div className="w-full max-w-md space-y-4">
+    <AuthLayout>
+      <div className="space-y-4">
         <BackButton to="/login" />
 
-        <Card className="p-6">
-          <CardHeader>
-            <div className="flex justify-center mb-4">
+        <Card className="elevated-card">
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center">
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                <Mail className="h-7 w-7 text-primary" />
+                {emailSent ? (
+                  <CheckCircle className="h-7 w-7 text-success" />
+                ) : (
+                  <Mail className="h-7 w-7 text-primary" />
+                )}
               </div>
             </div>
-            <CardTitle className="text-center">Reset Your Password</CardTitle>
-            <CardDescription className="text-center">
+            <CardTitle>Reset Your Password</CardTitle>
+            <CardDescription>
               {emailSent
                 ? "We've sent you a password reset link"
                 : "Enter your email address and we'll send you a reset link"}
@@ -94,32 +94,31 @@ const ResetPassword = () => {
             {emailSent ? (
               <div className="text-center space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Check your email for a link to reset your password. If it doesn't appear within a few minutes, check your spam folder.
+                  Check your email for a link to reset your password. If it doesn't 
+                  appear within a few minutes, check your spam folder.
                 </p>
-                <Button onClick={() => setEmailSent(false)} variant="outline" className="w-full">
+                <Button 
+                  onClick={() => setEmailSent(false)} 
+                  variant="outline" 
+                  className="w-full"
+                >
                   Try a different email
                 </Button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="parent@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="focus-ring"
-                  />
-                </div>
+                <FormField
+                  id="reset-email"
+                  label="Email Address"
+                  type="email"
+                  placeholder="parent@example.com"
+                  value={email}
+                  onChange={setEmail}
+                  required
+                  autoComplete="email"
+                />
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? <LoadingSpinner size="sm" /> : "Send Reset Link"}
                 </Button>
               </form>
@@ -127,7 +126,7 @@ const ResetPassword = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
