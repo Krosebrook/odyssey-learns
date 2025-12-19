@@ -96,6 +96,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "activity_participants_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       analytics_events: {
@@ -129,6 +136,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -250,6 +264,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "beta_feedback_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       child_generated_lessons: {
@@ -334,10 +355,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "child_generated_lessons_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "child_generated_lessons_creator_child_id_fkey"
             columns: ["creator_child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_generated_lessons_creator_child_id_fkey"
+            columns: ["creator_child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -499,10 +534,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "collaboration_requests_recipient_child_id_fkey"
+            columns: ["recipient_child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "collaboration_requests_requester_child_id_fkey"
             columns: ["requester_child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaboration_requests_requester_child_id_fkey"
+            columns: ["requester_child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -538,6 +587,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_reward_history_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -585,6 +641,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "creator_rewards_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       daily_lesson_quota: {
@@ -624,6 +687,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_lesson_quota_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -751,6 +821,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "data_export_log_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "data_export_log_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
@@ -808,6 +885,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emotion_logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1004,6 +1088,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lesson_analytics_events_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "lesson_analytics_events_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
@@ -1051,6 +1142,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_generation_dedup_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lesson_notes: {
@@ -1084,6 +1182,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_notes_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -1362,6 +1467,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_tokens_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: true
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lessons: {
@@ -1461,6 +1573,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "parent_child_messages_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "parent_child_messages_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
@@ -1512,6 +1631,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_notifications_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -1572,6 +1698,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_weekly_reports_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1654,10 +1787,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "peer_connections_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "peer_connections_peer_id_fkey"
             columns: ["peer_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "peer_connections_peer_id_fkey"
+            columns: ["peer_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -1846,6 +1993,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reward_redemptions_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reward_redemptions_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
@@ -1972,6 +2126,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "screen_time_sessions_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -2138,6 +2299,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "shared_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "shared_activities_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: false
@@ -2202,6 +2370,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_lesson_performance_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -2286,6 +2461,13 @@ export type Database = {
             referencedRelation: "children"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_badges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_progress: {
@@ -2325,6 +2507,13 @@ export type Database = {
             columns: ["child_id"]
             isOneToOne: false
             referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children_safe"
             referencedColumns: ["id"]
           },
           {
@@ -2369,6 +2558,85 @@ export type Database = {
       }
     }
     Views: {
+      children_safe: {
+        Row: {
+          avatar_config: Json | null
+          challenge_mode_enabled: boolean | null
+          created_at: string | null
+          daily_quest_id: string | null
+          daily_screen_time_limit_minutes: number | null
+          grade_level: number | null
+          id: string | null
+          is_deleted: boolean | null
+          name: string | null
+          parent_id: string | null
+          pin_status: string | null
+          quest_bonus_points: number | null
+          quest_completed_at: string | null
+          screen_time_enabled: boolean | null
+          total_points: number | null
+          weekly_report_enabled: boolean | null
+        }
+        Insert: {
+          avatar_config?: Json | null
+          challenge_mode_enabled?: boolean | null
+          created_at?: string | null
+          daily_quest_id?: string | null
+          daily_screen_time_limit_minutes?: number | null
+          grade_level?: number | null
+          id?: string | null
+          is_deleted?: never
+          name?: string | null
+          parent_id?: string | null
+          pin_status?: never
+          quest_bonus_points?: number | null
+          quest_completed_at?: string | null
+          screen_time_enabled?: boolean | null
+          total_points?: number | null
+          weekly_report_enabled?: boolean | null
+        }
+        Update: {
+          avatar_config?: Json | null
+          challenge_mode_enabled?: boolean | null
+          created_at?: string | null
+          daily_quest_id?: string | null
+          daily_screen_time_limit_minutes?: number | null
+          grade_level?: number | null
+          id?: string | null
+          is_deleted?: never
+          name?: string | null
+          parent_id?: string | null
+          pin_status?: never
+          quest_bonus_points?: number | null
+          quest_completed_at?: string | null
+          screen_time_enabled?: boolean | null
+          total_points?: number | null
+          weekly_report_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "children_daily_quest_id_fkey"
+            columns: ["daily_quest_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_review_dashboard"
+            referencedColumns: ["lesson_id"]
+          },
+          {
+            foreignKeyName: "children_daily_quest_id_fkey"
+            columns: ["daily_quest_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "children_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_leaderboard: {
         Row: {
           badge_count: number | null
