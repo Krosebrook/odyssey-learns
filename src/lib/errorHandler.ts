@@ -72,24 +72,25 @@ const flushErrorBatch = async () => {
 };
 
 /**
- * Store failed batch locally for retry
+ * Store failed batch locally for retry (using sessionStorage for security)
  */
 const storeFailedBatch = (batch: HandledError[]) => {
   try {
-    const failed = JSON.parse(localStorage.getItem('failed_error_batches') || '[]');
+    const failed = JSON.parse(sessionStorage.getItem('failed_error_batches') || '[]');
     failed.push(...batch);
-    localStorage.setItem('failed_error_batches', JSON.stringify(failed.slice(-50)));
+    // Keep only last 50 errors, limit sensitive data exposure
+    sessionStorage.setItem('failed_error_batches', JSON.stringify(failed.slice(-50)));
   } catch (e) {
     console.error('[Error Handler] Failed to store error batch locally:', e);
   }
 };
 
 /**
- * Retry failed batches
+ * Retry failed batches (using sessionStorage for security)
  */
 export const retryFailedBatches = async () => {
   try {
-    const failed = JSON.parse(localStorage.getItem('failed_error_batches') || '[]');
+    const failed = JSON.parse(sessionStorage.getItem('failed_error_batches') || '[]');
     if (failed.length === 0) return;
 
     const { supabase } = await import('@/integrations/supabase/client');
@@ -109,7 +110,7 @@ export const retryFailedBatches = async () => {
     const { error: dbError } = await supabase.from('error_logs').insert(records);
     
     if (!dbError) {
-      localStorage.removeItem('failed_error_batches');
+      sessionStorage.removeItem('failed_error_batches');
       console.log('[Error Handler] Successfully retried failed batches');
     }
   } catch (error) {
@@ -118,17 +119,18 @@ export const retryFailedBatches = async () => {
 };
 
 /**
- * Add error to batch and schedule flush
+ * Add error to batch and schedule flush (using sessionStorage for security)
  */
 const addToBatch = (error: HandledError) => {
   errorBatch.push(error);
 
-  // Store critical errors immediately to local storage
+  // Store critical errors immediately to session storage (not persisted across sessions for security)
   if (error.severity === 'critical' || error.severity === 'high') {
     try {
-      const errors = JSON.parse(localStorage.getItem('critical_errors') || '[]');
+      const errors = JSON.parse(sessionStorage.getItem('critical_errors') || '[]');
       errors.push(error);
-      localStorage.setItem('critical_errors', JSON.stringify(errors.slice(-20)));
+      // Limit to 20 most recent critical errors
+      sessionStorage.setItem('critical_errors', JSON.stringify(errors.slice(-20)));
     } catch (e) {
       console.error('[Error Handler] Failed to store critical error locally:', e);
     }
@@ -315,20 +317,29 @@ export const setupGlobalErrorHandlers = () => {
 export const flushErrors = flushErrorBatch;
 
 /**
- * Get all stored errors for debugging/support
+ * Get all stored errors for debugging/support (from sessionStorage)
  */
 export const getStoredErrors = (): HandledError[] => {
   try {
-    return JSON.parse(localStorage.getItem('critical_errors') || '[]');
+    return JSON.parse(sessionStorage.getItem('critical_errors') || '[]');
   } catch {
     return [];
   }
 };
 
 /**
- * Clear stored errors
+ * Clear stored errors from sessionStorage
  */
 export const clearStoredErrors = (): void => {
-  localStorage.removeItem('critical_errors');
-  localStorage.removeItem('failed_error_batches');
+  sessionStorage.removeItem('critical_errors');
+  sessionStorage.removeItem('failed_error_batches');
+};
+
+/**
+ * Clear all sensitive session data (call on logout)
+ */
+export const clearSensitiveData = (): void => {
+  clearStoredErrors();
+  // Clear any other session-related data
+  sessionStorage.removeItem('session_activity');
 };
