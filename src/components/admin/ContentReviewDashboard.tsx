@@ -277,55 +277,59 @@ export function ContentReviewDashboard() {
 
       {/* Filters */}
       <div className="flex gap-2 mb-6 flex-wrap">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border rounded-md"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="in_review">In Review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="needs_revision">Needs Revision</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_review">In Review</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="needs_revision">Needs Revision</SelectItem>
+            </SelectContent>
+          </Select>
           
-          <select
-            value={gradeFilter}
-            onChange={(e) => setGradeFilter(e.target.value)}
-            className="px-4 py-2 border rounded-md"
-          >
-            <option value="all">All Grades</option>
-            <option value="0">Kindergarten</option>
-            {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
-              <option key={g} value={g}>Grade {g}</option>
-            ))}
-          </select>
+          <Select value={gradeFilter} onValueChange={setGradeFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Grades" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Grades</SelectItem>
+              <SelectItem value="0">Kindergarten</SelectItem>
+              {[1,2,3,4,5,6,7,8,9,10,11,12].map(g => (
+                <SelectItem key={g} value={String(g)}>Grade {g}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
-          <select
-            value={subjectFilter}
-            onChange={(e) => setSubjectFilter(e.target.value)}
-            className="px-4 py-2 border rounded-md"
-          >
-            <option value="all">All Subjects</option>
-            <option value="reading">Reading</option>
-            <option value="math">Math</option>
-            <option value="science">Science</option>
-            <option value="social">Social Studies</option>
-            <option value="lifeskills">Life Skills</option>
-          </select>
+          <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Subjects" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Subjects</SelectItem>
+              <SelectItem value="reading">Reading</SelectItem>
+              <SelectItem value="math">Math</SelectItem>
+              <SelectItem value="science">Science</SelectItem>
+              <SelectItem value="social">Social Studies</SelectItem>
+              <SelectItem value="lifeskills">Life Skills</SelectItem>
+            </SelectContent>
+          </Select>
           
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-4 py-2 border rounded-md"
-          >
-            <option value="all">All Priorities</option>
-            <option value="urgent">Urgent</option>
-            <option value="high">High</option>
-            <option value="normal">Normal</option>
-            <option value="low">Low</option>
-          </select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Priorities" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priorities</SelectItem>
+              <SelectItem value="urgent">Urgent</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
           
           <Button onClick={handleAutoAssign} variant="outline">
             Auto-Assign Reviews

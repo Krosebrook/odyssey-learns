@@ -2,16 +2,13 @@ import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { SubjectBadge } from "@/components/ui/subject-badge";
-import { ProgressBar } from "@/components/ui/progress-bar";
-import { BookOpen, Award, TrendingUp } from "lucide-react";
+import { BookOpen, Award, TrendingUp, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useValidatedChild } from "@/hooks/useValidatedChild";
 import { CelebrationModal } from "@/components/celebration/CelebrationModal";
 import { generateDailyQuest, isQuestStale } from "@/lib/questGenerator";
-import { Sparkles, Settings } from "lucide-react";
 import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
 import { EmotionCheckIn } from "@/components/emotional/EmotionCheckIn";
 import { BadgeShowcase } from "@/components/badges/BadgeShowcase";
@@ -20,7 +17,8 @@ import { DailyQuest } from "@/components/quests/DailyQuest";
 import { CustomLessonGenerator } from "@/components/learning/CustomLessonGenerator";
 import { LessonTokenDisplay } from "@/components/gamification/LessonTokenDisplay";
 import { ShareLessonModal } from "@/components/learning/ShareLessonModal";
-import { Share2 } from "lucide-react";
+import { LessonCard, LessonCardCompact } from "@/components/learning/LessonCard";
+import { StatCard } from "@/components/ui/stat-card";
 
 const ChildDashboard = () => {
   const { childId, isValidating } = useValidatedChild();
@@ -196,41 +194,29 @@ const ChildDashboard = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 elevated-card hover-scale">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Lessons Completed</p>
-                <p className="text-2xl font-bold">{stats.completed}</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Lessons Completed"
+            value={stats.completed}
+            icon={BookOpen}
+            variant="primary"
+            className="elevated-card hover-scale"
+          />
 
-          <Card className="p-6 elevated-card hover-scale">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Points</p>
-                <p className="text-2xl font-bold">{child?.total_points || 0}</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Total Points"
+            value={child?.total_points || 0}
+            icon={Award}
+            variant="accent"
+            className="elevated-card hover-scale"
+          />
 
-          <Card className="p-6 elevated-card hover-scale">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Learning Streak</p>
-                <p className="text-2xl font-bold">{stats.streak} days</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Learning Streak"
+            value={`${stats.streak} days`}
+            icon={TrendingUp}
+            variant="success"
+            className="elevated-card hover-scale"
+          />
         </div>
 
         {/* Daily Quest - Age-Adaptive UI */}
@@ -264,45 +250,14 @@ const ChildDashboard = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {myLessons.map((lesson) => (
-                <Card key={lesson.id} className="p-4">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <SubjectBadge subject={lesson.subject} />
-                    <div className="flex items-center gap-1">
-                      {lesson.share_status === 'private' && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedLesson(lesson);
-                            setShareModalOpen(true);
-                          }}
-                        >
-                          <Share2 className="w-4 h-4 mr-1" />
-                          Share
-                        </Button>
-                      )}
-                      {lesson.share_status === 'pending_approval' && (
-                        <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
-                          Pending
-                        </span>
-                      )}
-                      {lesson.share_status === 'public' && (
-                        <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                          Public
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <h4 className="font-semibold mb-1">{lesson.title}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                    {lesson.description}
-                  </p>
-                  {lesson.share_status === 'public' && (
-                    <p className="text-xs text-muted-foreground">
-                      Used {lesson.times_used} times • Earned {lesson.times_used * 10} points
-                    </p>
-                  )}
-                </Card>
+                <LessonCardCompact
+                  key={lesson.id}
+                  lesson={lesson}
+                  onShare={() => {
+                    setSelectedLesson(lesson);
+                    setShareModalOpen(true);
+                  }}
+                />
               ))}
             </div>
           </Card>
@@ -357,25 +312,12 @@ const ChildDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lessons.map((lesson) => (
-                <Card
+                <LessonCard
                   key={lesson.id}
-                  className="p-6 elevated-card hover-scale cursor-pointer"
+                  lesson={lesson}
                   onClick={() => navigate(`/lesson/${lesson.id}`)}
-                >
-                  <SubjectBadge subject={lesson.subject} className="mb-4" />
-                  <h3 className="font-semibold mb-2">{lesson.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {lesson.description}
-                  </p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {lesson.estimated_minutes} min
-                    </span>
-                    <span className="font-medium text-accent">
-                      +{lesson.points_value} points
-                    </span>
-                  </div>
-                </Card>
+                  className="elevated-card"
+                />
               ))}
             </div>
           )}

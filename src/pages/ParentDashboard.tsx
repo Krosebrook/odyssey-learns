@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Users, Award, BookOpen, Plus, FileText, CheckCircle, Gift, Clock, MessageCircle } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { WeeklyReportCard } from "@/components/parent/WeeklyReportCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -148,41 +149,29 @@ const ParentDashboard = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 elevated-card">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Children</p>
-                <p className="text-2xl font-bold">{children.length}</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Total Children"
+            value={children.length}
+            icon={Users}
+            variant="primary"
+            className="elevated-card"
+          />
 
-          <Card className="p-6 elevated-card">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Lessons This Week</p>
-                <p className="text-2xl font-bold">0</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Lessons This Week"
+            value={0}
+            icon={BookOpen}
+            variant="success"
+            className="elevated-card"
+          />
 
-          <Card className="p-6 elevated-card">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pending Rewards</p>
-                <p className="text-2xl font-bold">0</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            title="Pending Rewards"
+            value={0}
+            icon={Award}
+            variant="accent"
+            className="elevated-card"
+          />
         </div>
 
         {/* Tabbed Content */}
