@@ -54,11 +54,11 @@ export class ErrorBoundary extends Component<Props, State> {
         url: window.location.href,
       };
       
-      // Store in localStorage as fallback
-      const errors = JSON.parse(localStorage.getItem('app_errors') || '[]');
+      // Store in sessionStorage for security (not persisted across browser sessions)
+      const errors = JSON.parse(sessionStorage.getItem('app_errors') || '[]');
       errors.push(errorData);
       // Keep only last 10 errors
-      localStorage.setItem('app_errors', JSON.stringify(errors.slice(-10)));
+      sessionStorage.setItem('app_errors', JSON.stringify(errors.slice(-10)));
     } catch (e) {
       console.error('Failed to log error:', e);
     }

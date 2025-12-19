@@ -1,6 +1,7 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { clearSensitiveData } from '@/lib/errorHandler';
 
 interface AuthContextType {
   user: User | null;
@@ -101,6 +102,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     setIsAdmin(false);
+    // Clear all sensitive session data on logout
+    clearSensitiveData();
+    sessionStorage.removeItem('app_errors');
     await supabase.auth.signOut();
   };
 

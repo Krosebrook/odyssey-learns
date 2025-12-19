@@ -7,6 +7,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { PWAInstallPrompt } from "./components/pwa/PWAInstallPrompt";
 import { PWAUpdatePrompt } from "./components/pwa/PWAUpdatePrompt";
+import { SessionTimeoutProvider } from "./components/auth/SessionTimeoutProvider";
 
 // Feature-based route renderers
 import { 
@@ -45,26 +46,28 @@ const App = () => (
       <TooltipProvider>
         <BrowserRouter>
           <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <PWAInstallPrompt />
-            <PWAUpdatePrompt />
-            <Routes>
-              {/* Auth routes: login, password reset */}
-              {renderAuthRoutes()}
-              
-              {/* Parent routes: dashboard, setup, child management */}
-              {renderParentRoutes()}
-              
-              {/* Child routes: dashboard, lessons, badges, rewards */}
-              {renderChildRoutes()}
-              
-              {/* Admin routes: dashboard, analytics, content management */}
-              {renderAdminRoutes()}
-              
-              {/* Public routes: landing, marketing, 404 fallback */}
-              {renderPublicRoutes()}
-            </Routes>
+            <SessionTimeoutProvider>
+              <Toaster />
+              <Sonner />
+              <PWAInstallPrompt />
+              <PWAUpdatePrompt />
+              <Routes>
+                {/* Auth routes: login, password reset */}
+                {renderAuthRoutes()}
+                
+                {/* Parent routes: dashboard, setup, child management */}
+                {renderParentRoutes()}
+                
+                {/* Child routes: dashboard, lessons, badges, rewards */}
+                {renderChildRoutes()}
+                
+                {/* Admin routes: dashboard, analytics, content management */}
+                {renderAdminRoutes()}
+                
+                {/* Public routes: landing, marketing, 404 fallback */}
+                {renderPublicRoutes()}
+              </Routes>
+            </SessionTimeoutProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

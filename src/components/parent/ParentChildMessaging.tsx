@@ -8,6 +8,7 @@ import { Send, Heart, MessageCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 import { logMessageView } from '@/lib/auditLogger';
+import { sanitizeText, VALIDATION_LIMITS } from '@/lib/inputSanitization';
 
 interface Child {
   id: string;
@@ -65,8 +66,19 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedChild) return;
 
+    // Sanitize message before sending
+    const sanitizedMessage = sanitizeText(newMessage, VALIDATION_LIMITS.MESSAGE_TEXT);
+    if (!sanitizedMessage.trim()) {
+      toast({
+        title: "Invalid message",
+        description: "Please enter a valid message",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSending(true);
-    const result = await sendRealtimeMessage(newMessage, messageType);
+    const result = await sendRealtimeMessage(sanitizedMessage, messageType);
 
     if (result.success) {
       toast({
