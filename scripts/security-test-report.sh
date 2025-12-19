@@ -2,8 +2,12 @@
 
 # Security Test Report Generator
 # Aggregates security test results and generates markdown report
+# Part of Phase 9: Security & Testing Polish
 
 set -e
+
+# Ensure we're in the project root
+cd "$(dirname "$0")/.."
 
 echo "🔒 Security Test Report Generator"
 echo "=================================="
