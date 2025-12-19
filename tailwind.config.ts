@@ -57,6 +57,20 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        cta: {
+          DEFAULT: "hsl(var(--cta))",
+          hover: "hsl(var(--cta-hover))",
+          foreground: "hsl(var(--cta-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          hover: "hsl(var(--surface-hover))",
+          elevated: "hsl(var(--surface-elevated))",
+        },
         reading: "hsl(var(--reading))",
         math: "hsl(var(--math))",
         science: "hsl(var(--science))",
