@@ -68,6 +68,20 @@ All colors MUST be HSL.
     /* Warning states */
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+
+    /* CTA / Hero button colors */
+    --cta: 243 70% 50%;
+    --cta-hover: 243 70% 45%;
+    --cta-foreground: 0 0% 100%;
+
+    /* Info state */
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Surface colors for layering */
+    --surface: 0 0% 100%;
+    --surface-hover: 220 14% 96%;
+    --surface-elevated: 0 0% 100%;
   }
 
   .dark {
@@ -98,6 +112,20 @@ All colors MUST be HSL.
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 243 70% 61%;
+
+    /* CTA / Hero button colors - dark mode */
+    --cta: 243 70% 55%;
+    --cta-hover: 243 70% 60%;
+    --cta-foreground: 0 0% 100%;
+
+    /* Info state - dark mode */
+    --info: 217 91% 65%;
+    --info-foreground: 0 0% 100%;
+
+    /* Surface colors - dark mode */
+    --surface: 217 33% 17%;
+    --surface-hover: 217 33% 22%;
+    --surface-elevated: 217 33% 20%;
   }
 }
 
