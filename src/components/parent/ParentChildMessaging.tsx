@@ -5,8 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Heart, MessageCircle, Sparkles, Loader2 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useRealtimeMessages } from '@/hooks/useRealtimeMessages';
 import { logMessageView } from '@/lib/auditLogger';
 
 interface Child {
@@ -14,35 +14,34 @@ interface Child {
   name: string;
 }
 
-interface Message {
-  id: string;
-  sender_type: 'parent' | 'child';
-  message_type: string;
-  message_text: string;
-  is_important: boolean;
-  read_at: string | null;
-  created_at: string;
-}
-
 export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [messageType, setMessageType] = useState<'text' | 'encouragement' | 'celebration'>('text');
   const [sending, setSending] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loadingChildren, setLoadingChildren] = useState(true);
   const { toast } = useToast();
+
+  // Use realtime messages hook
+  const { messages, loading: loadingMessages, sendMessage: sendRealtimeMessage, markAsRead } = useRealtimeMessages({
+    childId: selectedChild,
+    parentId,
+  });
 
   useEffect(() => {
     loadChildren();
   }, [parentId]);
 
   useEffect(() => {
-    if (selectedChild) {
-      loadMessages();
+    if (selectedChild && messages.length > 0) {
+      // Log access and mark as read
+      messages.forEach((msg) => {
+        logMessageView(msg.id, selectedChild);
+      });
+      markAsRead();
     }
-  }, [selectedChild]);
+  }, [selectedChild, messages, markAsRead]);
 
   const loadChildren = async () => {
     try {
@@ -59,78 +58,31 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
     } catch (error) {
       console.error('Error loading children:', error);
     } finally {
-      setLoading(false);
+      setLoadingChildren(false);
     }
   };
 
-  const loadMessages = async () => {
-    if (!selectedChild) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('parent_child_messages')
-        .select('*')
-        .eq('child_id', selectedChild)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      setMessages((data || []) as Message[]);
-
-      // Log access to sensitive messages
-      if (data && data.length > 0) {
-        data.forEach((msg: any) => {
-          logMessageView(msg.id, selectedChild);
-        });
-      }
-
-      // Mark messages as read
-      await supabase
-        .from('parent_child_messages')
-        .update({ read_at: new Date().toISOString() })
-        .eq('child_id', selectedChild)
-        .eq('sender_type', 'child')
-        .is('read_at', null);
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    }
-  };
-
-  const sendMessage = async () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedChild) return;
 
     setSending(true);
-    try {
-      const { error } = await supabase
-        .from('parent_child_messages')
-        .insert({
-          parent_id: parentId,
-          child_id: selectedChild,
-          sender_type: 'parent',
-          message_type: messageType,
-          message_text: newMessage.trim(),
-          is_important: messageType === 'encouragement' || messageType === 'celebration',
-        });
+    const result = await sendRealtimeMessage(newMessage, messageType);
 
-      if (error) throw error;
-
+    if (result.success) {
       toast({
         title: "Message sent! 💌",
         description: "Your child will see this message",
       });
-
       setNewMessage('');
       setMessageType('text');
-      loadMessages();
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } else {
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
-    } finally {
-      setSending(false);
     }
+    setSending(false);
   };
 
   const quickMessages = [
@@ -139,7 +91,7 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
     { type: 'celebration', text: "Wow! That's fantastic! Let's celebrate! 🎉" },
   ];
 
-  if (loading) {
+  if (loadingChildren) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -151,9 +103,18 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Messages</h2>
-        <p className="text-sm text-muted-foreground">Send encouragement and stay connected</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Messages</h2>
+          <p className="text-sm text-muted-foreground">Send encouragement and stay connected</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+          </span>
+          <span className="text-xs text-muted-foreground">Real-time</span>
+        </div>
       </div>
 
       {children.length === 0 ? (
@@ -180,7 +141,11 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
           {/* Messages Area */}
           <Card className="p-6">
             <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
-              {messages.length === 0 ? (
+              {loadingMessages ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : messages.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No messages yet. Start the conversation!</p>
@@ -280,11 +245,16 @@ export const ParentChildMessaging = ({ parentId }: { parentId: string }) => {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      sendMessage();
+                      handleSendMessage();
                     }
                   }}
                 />
-                <Button onClick={sendMessage} disabled={sending || !newMessage.trim()} className="gap-2">
+                <Button 
+                  onClick={handleSendMessage} 
+                  disabled={sending || !newMessage.trim()} 
+                  className="gap-2"
+                  aria-label="Send message"
+                >
                   {sending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
