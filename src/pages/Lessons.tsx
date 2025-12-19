@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { SubjectBadge } from "@/components/ui/subject-badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useValidatedChild } from "@/hooks/useValidatedChild";
-import { Search, BookOpen, Clock, Star, Filter } from "lucide-react";
+import { Search, BookOpen, Filter } from "lucide-react";
 import { BackButton } from "@/components/ui/back-button";
+import { LessonCard } from "@/components/learning/LessonCard";
 import {
   Select,
   SelectContent,
@@ -173,32 +172,11 @@ const Lessons = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredLessons.map((lesson) => (
-              <Card
+              <LessonCard
                 key={lesson.id}
-                className="p-6 elevated-card hover-scale cursor-pointer transition-all"
+                lesson={lesson}
                 onClick={() => navigate(`/lesson/${lesson.id}`)}
-              >
-                <SubjectBadge subject={lesson.subject} className="mb-4" />
-                
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                  {lesson.title}
-                </h3>
-                
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                  {lesson.description}
-                </p>
-
-                <div className="flex items-center gap-4 text-sm text-muted-foreground border-t pt-4 mt-4">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {lesson.estimated_minutes} min
-                  </div>
-                  <div className="flex items-center gap-1 text-accent font-medium">
-                    <Star className="w-4 h-4" />
-                    +{lesson.points_value} pts
-                  </div>
-                </div>
-              </Card>
+              />
             ))}
           </div>
         )}

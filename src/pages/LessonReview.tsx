@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
+import { SafeMarkdown } from "@/components/learning/SafeMarkdown";
 import { Slider } from "@/components/ui/slider";
 
 export default function LessonReview() {
@@ -287,9 +287,10 @@ export default function LessonReview() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <ReactMarkdown>{lesson.content_markdown}</ReactMarkdown>
-                </div>
+                <SafeMarkdown 
+                  content={lesson.content_markdown} 
+                  className="prose prose-sm max-w-none dark:prose-invert" 
+                />
 
                 <Separator className="my-6" />
 
