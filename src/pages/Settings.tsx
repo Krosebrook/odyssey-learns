@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,12 @@ import { useValidatedChild } from "@/hooks/useValidatedChild";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { toast } from "sonner";
-import { Settings as SettingsIcon, Volume2, Zap, User, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Volume2, Zap, User, LogOut, Camera, Trash2 } from "lucide-react";
 import { BackButton } from "@/components/ui/back-button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useProfilePicture } from "@/hooks/useProfilePicture";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Settings = () => {
   const { childId, isValidating } = useValidatedChild();
@@ -22,11 +24,14 @@ const Settings = () => {
   const [child, setChild] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploading, deleting, uploadProfilePicture, deleteProfilePicture } = useProfilePicture();
   
   // Settings state
   const [challengeMode, setChallengeMode] = useState(false);
   const [screenTimeLimit, setScreenTimeLimit] = useState([60]);
   const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(true);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isValidating && childId) {
@@ -48,6 +53,7 @@ const Settings = () => {
       setChallengeMode(data.challenge_mode_enabled || false);
       setScreenTimeLimit([data.daily_screen_time_limit_minutes || 60]);
       setWeeklyReportEnabled(data.weekly_report_enabled !== false);
+      setProfilePictureUrl(data.profile_picture_url || null);
     }
 
     setLoading(false);
@@ -78,6 +84,50 @@ const Settings = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !childId) return;
+
+    // Optimistic update - show selected image immediately
+    const tempUrl = URL.createObjectURL(file);
+    setProfilePictureUrl(tempUrl);
+
+    // Upload the file
+    const newUrl = await uploadProfilePicture(file, childId);
+    
+    // Clean up temp URL
+    URL.revokeObjectURL(tempUrl);
+    
+    if (newUrl) {
+      setProfilePictureUrl(newUrl);
+      // Reload child data to get updated info
+      loadSettings();
+    } else {
+      // Revert optimistic update on failure
+      setProfilePictureUrl(child?.profile_picture_url || null);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteProfilePicture = async () => {
+    if (!childId) return;
+
+    const success = await deleteProfilePicture(childId, profilePictureUrl);
+    if (success) {
+      setProfilePictureUrl(null);
+      // Reload child data to confirm deletion
+      loadSettings();
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   if (isValidating || loading) {
@@ -174,6 +224,65 @@ const Settings = () => {
               <User className="w-5 h-5 text-primary" />
               Account Information
             </h2>
+          </div>
+
+          {/* Profile Picture Section */}
+          <div className="space-y-3">
+            <Label>Profile Picture</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="w-24 h-24">
+                <AvatarImage 
+                  src={profilePictureUrl || undefined} 
+                  alt={child?.name || 'Profile picture'}
+                />
+                <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
+                  {child?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1 space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUploadClick}
+                    disabled={uploading || deleting}
+                    className="hover-scale"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {uploading ? 'Uploading...' : profilePictureUrl ? 'Change Photo' : 'Upload Photo'}
+                  </Button>
+                  
+                  {profilePictureUrl && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteProfilePicture}
+                      disabled={uploading || deleting}
+                      className="text-destructive hover:text-destructive hover-scale"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {deleting ? 'Removing...' : 'Remove'}
+                    </Button>
+                  )}
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG or WebP. Max 5MB. Min 100x100px.
+                </p>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-label="Upload profile picture"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
