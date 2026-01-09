@@ -7,9 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { useValidatedChild } from "@/hooks/useValidatedChild";
-import { supabase } from "@/integrations/supabase/client";
+import { useChildSettings } from "@/hooks/useChildSettings";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { toast } from "sonner";
 import { Settings as SettingsIcon, Volume2, Zap, User, LogOut } from "lucide-react";
 import { BackButton } from "@/components/ui/back-button";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,62 +16,35 @@ import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { childId, isValidating } = useValidatedChild();
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
-  const [child, setChild] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   
-  // Settings state
+  // Use React Query hook for better caching and optimistic updates
+  const { settings, isLoading, updateSettings } = useChildSettings(childId);
+  
+  // Local state for form inputs (synced with settings data)
   const [challengeMode, setChallengeMode] = useState(false);
   const [screenTimeLimit, setScreenTimeLimit] = useState([60]);
   const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(true);
 
+  // Sync form state with fetched settings
   useEffect(() => {
-    if (!isValidating && childId) {
-      loadSettings();
+    if (settings) {
+      setChallengeMode(settings.challenge_mode_enabled);
+      setScreenTimeLimit([settings.daily_screen_time_limit_minutes]);
+      setWeeklyReportEnabled(settings.weekly_report_enabled);
     }
-  }, [childId, isValidating]);
+  }, [settings]);
 
-  const loadSettings = async () => {
+  const saveSettings = () => {
     if (!childId) return;
-
-    const { data } = await supabase
-      .from('children')
-      .select('*')
-      .eq('id', childId)
-      .single();
-
-    if (data) {
-      setChild(data);
-      setChallengeMode(data.challenge_mode_enabled || false);
-      setScreenTimeLimit([data.daily_screen_time_limit_minutes || 60]);
-      setWeeklyReportEnabled(data.weekly_report_enabled !== false);
-    }
-
-    setLoading(false);
-  };
-
-  const saveSettings = async () => {
-    if (!childId) return;
-    setSaving(true);
-
-    const { error } = await supabase
-      .from('children')
-      .update({
-        challenge_mode_enabled: challengeMode,
-        daily_screen_time_limit_minutes: screenTimeLimit[0],
-        weekly_report_enabled: weeklyReportEnabled,
-      })
-      .eq('id', childId);
-
-    if (error) {
-      toast.error("Failed to save settings");
-    } else {
-      toast.success("Settings saved successfully!");
-    }
-
-    setSaving(false);
+    
+    // Trigger mutation with optimistic update
+    updateSettings.mutate({
+      challenge_mode_enabled: challengeMode,
+      daily_screen_time_limit_minutes: screenTimeLimit[0],
+      weekly_report_enabled: weeklyReportEnabled,
+    });
   };
 
   const handleSignOut = async () => {
@@ -80,7 +52,7 @@ const Settings = () => {
     navigate('/');
   };
 
-  if (isValidating || loading) {
+  if (isValidating || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner size="lg" />
