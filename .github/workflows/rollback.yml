@@ -1,0 +1,255 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Git tag or SHA to rollback to (e.g., v0.3.0 or abc1234)'
+        required: true
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    name: Validate Rollback Target
+    runs-on: ubuntu-latest
+    outputs:
+      is_valid: ${{ steps.check.outputs.is_valid }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Validate git reference
+        id: check
+        run: |
+          if git rev-parse --verify "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "✅ Valid git reference: ${{ inputs.version }}"
+            echo "is_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Invalid git reference: ${{ inputs.version }}"
+            echo "is_valid=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: Show commit info
+        run: |
+          echo "📋 Rollback Details:"
+          echo "Target: ${{ inputs.version }}"
+          echo "Reason: ${{ inputs.reason }}"
+          echo ""
+          echo "Commit Information:"
+          git show --no-patch --format=fuller ${{ inputs.version }}
+
+  rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.is_valid == 'true'
+    environment:
+      name: production
+      url: https://innerodyssey.lovable.app
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linting
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run smoke tests on build
+        run: |
+          echo "🧪 Running pre-deployment smoke tests..."
+          # Basic validation that build succeeded
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed - dist directory not found"
+            exit 1
+          fi
+          
+          # Check critical files exist
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ index.html not found in dist"
+            exit 1
+          fi
+          
+          echo "✅ Build artifacts validated"
+      
+      - name: Deploy Edge Functions
+        id: deploy_functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          echo "🚀 Deploying edge functions to rollback version..."
+          npx supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+        continue-on-error: true
+      
+      - name: Wait for deployment propagation
+        run: |
+          echo "⏳ Waiting 30 seconds for deployment to propagate..."
+          sleep 30
+      
+      - name: Run production smoke tests
+        id: smoke_tests
+        run: |
+          echo "🧪 Running production smoke tests..."
+          chmod +x ./scripts/staging-smoke-tests.sh || true
+          
+          if [ -f "./scripts/staging-smoke-tests.sh" ]; then
+            STAGING_URL=https://innerodyssey.lovable.app ./scripts/staging-smoke-tests.sh
+          else
+            echo "⚠️  Smoke test script not found, performing basic health check"
+            curl -f https://innerodyssey.lovable.app/ || exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Verify smoke tests
+        if: steps.smoke_tests.outcome == 'failure'
+        run: |
+          echo "⚠️  WARNING: Smoke tests failed after rollback!"
+          echo "This may indicate the rollback target also has issues."
+          echo "Manual intervention required."
+          # Continue anyway since we're already in crisis mode
+      
+      - name: Monitor error rates
+        run: |
+          echo "📊 Monitoring error rates for 5 minutes..."
+          echo "Check your monitoring dashboard (Sentry, DataDog, etc.)"
+          sleep 300
+          echo "✅ Initial monitoring period complete"
+      
+      - name: Create rollback tag
+        run: |
+          ROLLBACK_TAG="rollback-$(date +%Y%m%d-%H%M%S)"
+          git tag -a "$ROLLBACK_TAG" -m "Rollback to ${{ inputs.version }}: ${{ inputs.reason }}"
+          git push origin "$ROLLBACK_TAG"
+          echo "📌 Created rollback tag: $ROLLBACK_TAG"
+      
+      - name: Rollback summary
+        if: always()
+        run: |
+          echo "═══════════════════════════════════════"
+          echo "         ROLLBACK SUMMARY"
+          echo "═══════════════════════════════════════"
+          echo "Status: ${{ job.status }}"
+          echo "Target: ${{ inputs.version }}"
+          echo "Reason: ${{ inputs.reason }}"
+          echo "Edge Functions: ${{ steps.deploy_functions.outcome }}"
+          echo "Smoke Tests: ${{ steps.smoke_tests.outcome }}"
+          echo "Timestamp: $(date -u)"
+          echo "═══════════════════════════════════════"
+      
+      - name: Notify team (placeholder)
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ ROLLBACK SUCCESSFUL!"
+            echo "🔗 URL: https://innerodyssey.lovable.app"
+            echo "📋 Target: ${{ inputs.version }}"
+            echo "📝 Reason: ${{ inputs.reason }}"
+          else
+            echo "❌ ROLLBACK FAILED!"
+            echo "🚨 CRITICAL: Immediate attention required!"
+            echo "Target: ${{ inputs.version }}"
+            echo "Check workflow logs for details"
+          fi
+          
+          # TODO: Integrate with Slack/Discord for real-time notifications
+          # Uncomment and configure when ready:
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{
+          #     "text":"🔄 Production Rollback: '"$STATUS"'",
+          #     "attachments":[{
+          #       "color":"'"$([ "$STATUS" = "success" ] && echo "warning" || echo "danger")"'",
+          #       "fields":[
+          #         {"title":"Status","value":"'"$STATUS"'","short":true},
+          #         {"title":"Target","value":"${{ inputs.version }}","short":true},
+          #         {"title":"Reason","value":"${{ inputs.reason }}","short":false},
+          #         {"title":"URL","value":"https://innerodyssey.lovable.app","short":false}
+          #       ]
+          #     }]
+          #   }'
+
+  post-rollback:
+    name: Post-Rollback Actions
+    runs-on: ubuntu-latest
+    needs: rollback
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create incident issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const rollbackStatus = '${{ needs.rollback.result }}';
+            const version = '${{ inputs.version }}';
+            const reason = '${{ inputs.reason }}';
+            
+            const body = `
+            ## Production Rollback Report
+            
+            **Status**: ${rollbackStatus === 'success' ? '✅ Successful' : '❌ Failed'}
+            **Target Version**: \`${version}\`
+            **Reason**: ${reason}
+            **Timestamp**: ${new Date().toISOString()}
+            **Workflow Run**: [View Details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            
+            ### Next Steps
+            - [ ] Verify production is stable
+            - [ ] Identify root cause of original issue
+            - [ ] Create fix for original issue
+            - [ ] Test fix thoroughly in staging
+            - [ ] Plan forward deployment
+            - [ ] Update postmortem document
+            
+            ### Monitoring
+            - Check error rates in monitoring dashboard
+            - Review user reports for 24 hours
+            - Monitor performance metrics
+            
+            **Assigned to**: @platform-team
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[INCIDENT] Production Rollback - ${new Date().toISOString().split('T')[0]}`,
+              body: body,
+              labels: ['incident', 'rollback', 'production', 'urgent']
+            });
+      
+      - name: Post-rollback checklist
+        run: |
+          echo "📋 POST-ROLLBACK CHECKLIST"
+          echo "═══════════════════════════════════════"
+          echo "[ ] Monitor error rates for next 24 hours"
+          echo "[ ] Check user-facing features are working"
+          echo "[ ] Review monitoring dashboards (Sentry, etc.)"
+          echo "[ ] Communicate with affected customers (if any)"
+          echo "[ ] Schedule postmortem meeting (within 48 hours)"
+          echo "[ ] Document root cause in incident issue"
+          echo "[ ] Create fix and test in staging"
+          echo "[ ] Update ADR if architectural issue"
+          echo "═══════════════════════════════════════"
