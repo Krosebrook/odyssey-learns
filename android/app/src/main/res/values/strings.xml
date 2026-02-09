@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Inner Odyssey</string>
+    <string name="title_activity_main">Inner Odyssey</string>
+    <string name="package_name">com.odysseylearns.app</string>
+    <string name="custom_url_scheme">com.odysseylearns.app</string>
+</resources>

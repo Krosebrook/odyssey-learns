@@ -100,19 +100,36 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks
+          // Core vendor chunks
           "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": [
+          "supabase": ["@supabase/supabase-js"],
+          "query": ["@tanstack/react-query"],
+          
+          // UI framework chunks - split into smaller pieces
+          "ui-core": [
             "@radix-ui/react-dialog",
             "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-tabs",
             "@radix-ui/react-toast",
             "@radix-ui/react-tooltip",
           ],
+          "ui-extended": [
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-select",
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-popover",
+          ],
+          
+          // Form handling
           "form-vendor": ["react-hook-form", "@hookform/resolvers", "zod"],
+          
+          // Charts (lazy loaded only when needed)
           "chart-vendor": ["recharts"],
-          "supabase": ["@supabase/supabase-js"],
-          "query": ["@tanstack/react-query"],
+          
+          // Markdown rendering (lazy loaded)
+          "markdown": ["react-markdown", "remark-gfm", "rehype-sanitize"],
+          
+          // Utilities
+          "utils": ["date-fns", "clsx", "tailwind-merge"],
         },
       },
     },

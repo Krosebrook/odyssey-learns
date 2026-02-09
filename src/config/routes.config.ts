@@ -3,22 +3,24 @@ import { createLazyRoute } from './lazyRoutes';
 import { ROUTE_PATHS } from '@/constants/routePaths';
 import type { RouteConfig, RouteGroup, AppRoutes } from '@/types/routes';
 
-// Eager-loaded pages (landing, auth, static)
+// Eager-loaded pages (only critical landing and auth)
 import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
-import ChildSelector from '@/pages/ChildSelector';
-import ResetPassword from '@/pages/ResetPassword';
-import UpdatePassword from '@/pages/UpdatePassword';
-import About from '@/pages/About';
-import Features from '@/pages/Features';
-import Pricing from '@/pages/Pricing';
-import Contact from '@/pages/Contact';
-import Support from '@/pages/Support';
-import Terms from '@/pages/Terms';
-import Privacy from '@/pages/Privacy';
-import Discord from '@/pages/Discord';
-import BetaProgram from '@/pages/BetaProgram';
 import NotFound from '@/pages/NotFound';
+
+// Lazy-loaded static pages
+const ResetPassword = createLazyRoute(() => import('@/pages/ResetPassword'));
+const UpdatePassword = createLazyRoute(() => import('@/pages/UpdatePassword'));
+const About = createLazyRoute(() => import('@/pages/About'));
+const Features = createLazyRoute(() => import('@/pages/Features'));
+const Pricing = createLazyRoute(() => import('@/pages/Pricing'));
+const Contact = createLazyRoute(() => import('@/pages/Contact'));
+const Support = createLazyRoute(() => import('@/pages/Support'));
+const Terms = createLazyRoute(() => import('@/pages/Terms'));
+const Privacy = createLazyRoute(() => import('@/pages/Privacy'));
+const Discord = createLazyRoute(() => import('@/pages/Discord'));
+const BetaProgram = createLazyRoute(() => import('@/pages/BetaProgram'));
+const ChildSelector = createLazyRoute(() => import('@/pages/ChildSelector'));
 
 // Lazy-loaded pages with preloading for critical routes
 const ParentSetup = createLazyRoute(() => import('@/pages/ParentSetup'), { preload: true });
