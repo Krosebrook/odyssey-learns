@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,39 +38,8 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
   const [selectedFriend, setSelectedFriend] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
-  // Show loading while validating
-  if (isValidating) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-center py-8">
-          <LoadingSpinner />
-        </div>
-      </Card>
-    );
-  }
-  
-  // If validation fails or childId mismatch, show error
-  if (!validatedChildId || validatedChildId !== childId) {
-    return (
-      <Card className="p-6">
-        <Alert variant="destructive">
-          <Shield className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>
-            Unable to verify child access. Please refresh the page or select a different child.
-          </AlertDescription>
-        </Alert>
-      </Card>
-    );
-  }
 
-  useEffect(() => {
-    loadFriends();
-    loadRequests();
-  }, [childId]);
-
-  const loadFriends = async () => {
+  const loadFriends = useCallback(async () => {
     // Get siblings (same parent) as potential collaboration partners
     const { data: child } = await supabase
       .from('children')
@@ -87,9 +56,9 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
 
       setAvailableFriends(siblings || []);
     }
-  };
+  }, [childId]);
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     const { data } = await supabase
       .from('collaboration_requests')
       .select('*, requester:children!collaboration_requests_requester_child_id_fkey(name), recipient:children!collaboration_requests_recipient_child_id_fkey(name)')
@@ -98,7 +67,16 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
       .order('created_at', { ascending: false });
 
     setRequests(data || []);
-  };
+  }, [childId, lessonId]);
+
+  // Effect to load data when childId changes
+  useEffect(() => {
+    // Only load data if we have a validated childId
+    if (validatedChildId && validatedChildId === childId) {
+      loadFriends();
+      loadRequests();
+    }
+  }, [childId, validatedChildId, loadFriends, loadRequests]);
 
   const sendRequest = async () => {
     if (!selectedFriend) return;
@@ -187,6 +165,32 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
         return <Clock className="w-4 h-4 text-warning" />;
     }
   };
+
+  // Show loading while validating
+  if (isValidating) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center justify-center py-8">
+          <LoadingSpinner />
+        </div>
+      </Card>
+    );
+  }
+  
+  // If validation fails or childId mismatch, show error
+  if (!validatedChildId || validatedChildId !== childId) {
+    return (
+      <Card className="p-6">
+        <Alert variant="destructive">
+          <Shield className="h-4 w-4" />
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            Unable to verify child access. Please refresh the page or select a different child.
+          </AlertDescription>
+        </Alert>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5">
