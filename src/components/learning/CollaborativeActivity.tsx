@@ -69,7 +69,7 @@ export const CollaborativeActivity = ({ childId, lessonId }: CollaborativeActivi
     setRequests(data || []);
   }, [childId, lessonId]);
 
-  // Effect to load data when validation completes or childId changes
+  // Effect to load data when dependencies change (childId, validatedChildId, or callbacks update)
   useEffect(() => {
     // Only load data if we have a validated childId
     if (validatedChildId && validatedChildId === childId) {
