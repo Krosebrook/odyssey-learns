@@ -8,8 +8,11 @@ Inner Odyssey is built as a Progressive Web App (PWA) with Capacitor support for
 
 - Node.js 18+ and npm
 - Android Studio (for building APK/AAB files)
-- Java Development Kit (JDK) 17+
+- Java Development Kit (JDK) 17 or 21 (recommended: JDK 17 LTS)
+  - **Note**: JDK 17 is compatible with Android Gradle Plugin 8.x used in this project
+  - Verify installation: `java -version` should show version 17.x or 21.x
 - Android SDK (API level 22+)
+  - Can be installed through Android Studio
 
 ## Configuration
 
