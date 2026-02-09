@@ -1,0 +1,97 @@
+# Dependabot Configuration
+# Automated dependency updates for npm packages
+
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    
+    # Limit number of open PRs
+    open-pull-requests-limit: 10
+    
+    # Reviewers (update with actual team members)
+    reviewers:
+      - "Krosebrook"
+    
+    # Labels for organization
+    labels:
+      - "dependencies"
+      - "automated"
+      - "security"
+    
+    # Commit message convention
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore(dev)"
+      include: "scope"
+    
+    # Version strategy
+    versioning-strategy: "auto"
+    
+    # Ignore specific dependencies or update types
+    ignore:
+      # Ignore major version updates for React (need careful migration)
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      
+      # Ignore major version updates for Supabase (breaking changes common)
+      - dependency-name: "@supabase/supabase-js"
+        update-types: ["version-update:semver-major"]
+      
+      # Ignore major version updates for Vite (build tool changes risky)
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+    
+    # Group related dependencies
+    groups:
+      # Group Radix UI updates together
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      
+      # Group testing libraries together
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "vitest"
+          - "playwright"
+      
+      # Group TypeScript and ESLint together
+      linting:
+        patterns:
+          - "typescript"
+          - "eslint*"
+          - "@typescript-eslint/*"
+      
+      # Group Supabase packages together
+      supabase:
+        patterns:
+          - "@supabase/*"
+  
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "America/New_York"
+    
+    open-pull-requests-limit: 5
+    
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
+    
+    commit-message:
+      prefix: "ci"
+      include: "scope"
